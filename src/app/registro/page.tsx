@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Store, UserPlus, ArrowRight, Eye, EyeOff, Loader2, CheckCircle2, XCircle } from "lucide-react";
-import { validateDNI, validatePassword, validateUsername } from "@/lib/validators";
+import { validatePhone, validatePassword, validateUsername } from "@/lib/validators";
 import { registerUser, checkUsernameAvailability } from "@/app/actions/auth";
 
 export default function RegistroPage() {
@@ -14,7 +14,7 @@ export default function RegistroPage() {
     nombre: "",
     apellido: "",
     mail: "",
-    dni: "",
+    phone: "",
     contrasena: "",
     contrasenaConfirmacion: "",
   });
@@ -73,9 +73,9 @@ export default function RegistroPage() {
       return;
     }
 
-    // Validación DNI (solo números, entre 7 y 9 dígitos)
-    if (!validateDNI(formData.dni)) {
-      setErrorMsg("El DNI debe contener solo números (entre 7 y 9 dígitos).");
+        // Validación Teléfono
+    if (!validatePhone(formData.phone)) {
+      setErrorMsg("El teléfono debe contener entre 7 y 15 caracteres válidos.");
       return;
     }
 
@@ -125,7 +125,7 @@ export default function RegistroPage() {
             Crea tu cuenta
           </h2>
           <p className="mt-2 text-sm text-foreground-muted">
-            Únete a Minú Market y empieza a comprar o vender.
+            Únete a Minú Empleos y encuentra las mejores oportunidades laborales en la región.
           </p>
         </div>
 
@@ -220,24 +220,24 @@ export default function RegistroPage() {
               </div>
             </div>
 
-            {/* DNI */}
+                        {/* Teléfono */}
             <div>
               <label
-                htmlFor="dni"
+                htmlFor="phone"
                 className="mb-1 block text-sm font-bold text-foreground"
               >
-                DNI / Documento
+                Teléfono de Contacto
               </label>
               <input
-                id="dni"
-                name="dni"
+                id="phone"
+                name="phone"
                 type="text"
                 required
-                value={formData.dni}
+                value={formData.phone}
                 onChange={handleChange}
-                placeholder="Sin puntos ni espacios"
+                placeholder="+54 9 11 1234-5678"
                 className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
-                maxLength={9}
+                maxLength={20}
               />
             </div>
 
@@ -314,6 +314,28 @@ export default function RegistroPage() {
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Términos y Condiciones (Consentimiento explícito - Ley 25.326) */}
+          <div className="flex items-start gap-2">
+            <input
+              id="terminos"
+              name="terminos"
+              type="checkbox"
+              required
+              className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary"
+            />
+            <label htmlFor="terminos" className="text-sm text-foreground-muted">
+              He leído y acepto los{" "}
+              <Link href="/terminos" className="font-semibold text-primary hover:underline" target="_blank">
+                Términos y Condiciones
+              </Link>{" "}
+              y las{" "}
+              <Link href="/privacidad" className="font-semibold text-primary hover:underline" target="_blank">
+                Políticas de Privacidad
+              </Link>
+              . Autorizo el tratamiento de mis datos personales para fines de intermediación laboral.
+            </label>
           </div>
 
           {/* Botón Submit */}

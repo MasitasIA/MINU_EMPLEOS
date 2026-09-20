@@ -61,7 +61,7 @@ export default function IniciarSesionPage() {
             Iniciar Sesión
           </h2>
           <p className="mt-2 text-sm text-foreground-muted">
-            Bienvenido de vuelta a Minú Market.
+            Bienvenido de vuelta a Minú Empleos.
           </p>
         </div>
 

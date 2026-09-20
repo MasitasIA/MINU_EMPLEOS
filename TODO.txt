@@ -1,53 +1,47 @@
-# TODO: Frontend Marketplace Local (React + Next.js + Tailwind)
+# TODO: Portal de Empleos Local (Minú Empleos)
 
-## 1. Configuración Inicial y Arquitectura (✓ COMPLETADO)
+## 1. Configuración Inicial y Migración (✓ COMPLETADO)
 [x] Instalar Next.js con App Router, Tailwind CSS, y TypeScript.
-[x] Crear estructura de directorios (`src/components`, `src/lib`, `src/hooks`, `src/types`).
-[x] Configurar rutas básicas de cliente y vendedor (`/tiendas`, `/productos`, `/carrito`, `/panel-tienda`, `/registro`, `/iniciar`).
+[x] Migrar toda la base de datos y esquema de "Marketplace" a "Portal de Empleos" (Companies, Jobs, Applications).
+[x] Rebranding completo a "Minú Empleos" (Navbar, Footer, Hero, Meta tags).
+[x] Integración de base de datos Supabase (Server Actions para companies, jobs, applications, categories, localities).
 
-## 2. UI Base y Diseño System (En Progreso)
-[x] Configurar variables de diseño (colores primarios, fuentes integradas mediante CSS en `globals.css`).
-[ ] Crear componentes UI genéricos reutilizables (Button, Input, Modal). *(Actualmente el AuthModal está, pero faltan componentes de formulario puros para no repetir código de Tailwind).*
-[x] Crear el `Layout` principal orientado a compradores (Navbar con buscador y carrito, Footer legal/informativo).
-[ ] Crear el `Layout` para el panel de administración de tiendas (Sidebar, Header con notificaciones).
+## 2. UI y Componentes (En Progreso)
+[x] Layout principal con buscador integrado en el Navbar.
+[x] Tarjetas de Empleo (`JobCard.tsx`) y Tarjetas de Empresa (`CompanyCard.tsx`).
+[x] Botón de postulación interactivo (`ApplyJobButton.tsx`).
+[x] Formularios de creación: `CreateJobForm.tsx` y `CompanySettingsForm.tsx`.
+[x] Crear componentes UI genéricos reutilizables (Button, Input, Modal) para estandarizar el diseño y reducir clases de Tailwind repetidas.
+[x] Añadir estados de carga (`loading.tsx` o skeletons) en las vistas que hacen fetch a Supabase.
 
-## 3. Rutas y Vistas Orientadas al Cliente (Compradores) (En Progreso)
-[x] `app/page.tsx` (Home): Hero section, carrusel de tiendas destacadas, grilla de productos recientes.
-[x] `app/productos/page.tsx`: Lista de todos los productos (Catálogo principal) con filtros interactivos.
-[x] `app/tiendas/[id]/page.tsx`: Perfil de la tienda.
-[x] `app/productos/[id]/page.tsx`: Detalle de producto.
-[x] `app/registro/page.tsx`: Formulario de registro con validaciones de seguridad y guardado en archivo local temporal mediante Server Action.
-[ ] `app/iniciar/page.tsx`: Formulario de inicio de sesión (Login) que valide contra el archivo `users-temp.json`.
-[ ] `app/carrito/page.tsx`: Resumen de productos añadidos, cálculo de subtotales, botón hacia checkout.
-[ ] `app/pago/page.tsx` (Checkout): Formulario de envío y simulación de pago local.
+## 3. Rutas de Candidatos (En Progreso)
+[x] `app/page.tsx` (Home): Hero con buscador y categorías.
+[x] `app/empleos/[slug]/page.tsx`: Detalle de la oferta de empleo y botón de postularse.
+[x] `app/empresas/[id]/page.tsx`: Perfil público de la empresa y lista de vacantes.
+[x] `app/mis-postulaciones/page.tsx`: Seguimiento de estado de postulaciones enviadas.
+[x] `app/iniciar/page.tsx` y `app/registro/page.tsx`: Autenticación y creación de perfiles de usuario.
+[x] `app/mi-cuenta/page.tsx`: Formulario para que el usuario gestione su perfil y suba su currículum (CV) al bucket `RESUMES` de Supabase.
+[ ] `app/mi-cuenta/eliminar-cuenta/page.tsx`: Crear el formulario y lógica para eliminar la cuenta permanentemente (actualmente el botón de perfil redirige aquí).
+[ ] `app/empleos/page.tsx`: Mejorar el catálogo de búsqueda integrando filtros interactivos (por modalidad, jornada, categoría y localidad) en un componente `JobSearchCatalog.tsx`.
+[ ] `app/recuperar-password/page.tsx`: Flujo de "Olvidé mi contraseña".
 
-## 4. Rutas y Vistas Orientadas al Vendedor (Tiendas) (Por Empezar)
-[ ] `app/panel-tienda/page.tsx`: Dashboard de la tienda (Métricas clave: ventas, pedidos pendientes, productos activos).
-[ ] `app/panel-tienda/products/page.tsx`: Tabla de gestión de productos propios (con opciones de editar y eliminar).
-[ ] `app/panel-tienda/products/new/page.tsx`: Formulario de creación de producto (título, descripción, precio, categoría, subida de imágenes, stock).
-[ ] `app/panel-tienda/orders/page.tsx`: Listado de pedidos recibidos, actualización de estados.
+## 4. Rutas de Empresas / Reclutadores (En Progreso)
+[x] `app/panel-empresa/page.tsx`: Dashboard de la empresa.
+[x] `app/panel-empresa/ajustes/page.tsx`: Edición del perfil de la empresa (logo, portada, descripción).
+[x] `app/panel-empresa/empleos/nuevo/page.tsx`: Formulario de publicación de nuevas ofertas laborales.
+[ ] `app/panel-empresa/postulaciones/page.tsx`: Panel para que la empresa pueda ver a los candidatos que aplicaron a sus ofertas.
+[ ] Añadir funcionalidad para que la empresa pueda cambiar el estado de la postulación (`pending` -> `reviewed` -> `accepted` / `rejected`).
+[ ] `app/panel-empresa/empleos/page.tsx`: Listado de los empleos activos e inactivos de la empresa con opción a pausarlos, editarlos o eliminarlos.
 
 ## 5. Integración Lógica y Estado
-[ ] Crear `CartContext` o store global con Zustand para manejar el estado global del carrito de compras en todo el sitio.
-[x] Crear validadores (ej. DNI, Contraseñas fuertes) en `src/lib/validators.ts`.
-[x] Crear mock data y lógica de lectura/escritura (Server Actions) para manejar la base de datos temporal (`users-temp.json`).
+[x] Auth System con Supabase y manejo de sesiones.
+[x] Lógica de vistas y analíticas básicas (`jobs-stats.json`).
+[ ] Integración del sistema de Storage para imágenes (logos y portadas) de empresas en el bucket `PROFILES`. (Los CVs ya están listos en `RESUMES`).
 
-## 6. Detalles Finales y Pulido (Mejoras Propuestas) (✓ COMPLETADO)
-[x] Optimizar imágenes usando el componente `<Image>` de `next/image`.
-[x] Añadir animaciones sutiles (hover effects y transiciones CSS incorporadas).
-[x] Asegurar que todo sea 100% responsivo (Mobile-first). 
-[x] Revisar accesibilidad completa (aria-labels en botones sin texto).
-[x] Mejorar la búsqueda integrando el buscador del Navbar con la página de catálogo.
-[x] Añadir un estado vacío global y manejo de errores (páginas 404 y boundaries de error).
-
-## 7. Nuevas Tareas Descubiertas (Auditoría Reciente)
-[ ] **Refactorización de Formularios:** Extraer los inputs de texto del Registro a un componente `<Input />` reutilizable, porque el Dashboard del vendedor necesitará muchísimos formularios y será tedioso repetir las clases de Tailwind.
-[ ] **Expansión del "Backend Mock":** Ya que implementamos escritura de archivos con `users-temp.json`, debemos hacer lo mismo para el catálogo de productos (`products.json`) cuando el vendedor cree un nuevo producto en su panel.
-
-
-## 8. Seguridad y Protección de Datos (Urgente)
-[ ] Instalar `bcrypt` y encriptar las contraseñas en `src/app/actions/auth.ts` antes de guardarlas.
-[ ] Implementar sistema de sesiones (JWT o Cookies HTTP-Only) para el inicio de sesión.
-[ ] Añadir sanitización (DOMPurify o Zod) en el backend para evitar inyección de código (XSS) en nombres o descripciones de tiendas.
-[ ] Migrar el archivo `users-temp.json` a una base de datos real (Supabase, Firebase, o Postgres) para evitar vulnerabilidades de concurrencia y proteger los datos personales.
-[ ] (Opcional) Implementar Rate Limiting en las Server Actions para evitar ataques de fuerza bruta.
+## 6. Detalles Finales, Seguridad y Mejoras Propuestas
+[ ] Actualizar `README.md` (actualmente tiene el texto por defecto de create-next-app) con las instrucciones para levantar el proyecto Minú Empleos.
+[ ] Enviar notificaciones (Emails o In-App) cuando el estado de una postulación cambia.
+[ ] Implementar un sistema de verificación (`is_verified`) para destacar empresas confiables en la plataforma.
+[ ] Mejorar SEO añadiendo meta tags dinámicas en las ofertas de empleo y perfiles de empresa.
+[ ] Sanitización de inputs (Zod/DOMPurify) en las descripciones largas de los empleos para evitar inyecciones XSS y validación estricta de formularios.
+[ ] Añadir y auditar políticas RLS (Row Level Security) robustas en las tablas de Supabase y en los buckets de Storage (como hicimos con el permiso DELETE de CVs) para máxima seguridad.

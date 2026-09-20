@@ -21,9 +21,9 @@ const geistMono = Geist_Mono({
 
 // Metadatos para SEO
 export const metadata: Metadata = {
-  title: "Minú Market",
+  title: "Minú Empleos",
   description:
-    "Marketplace local de productos y servicios, asentado en la localidad de Guaminí y los alrededores",
+    "Portal local para la disponibilidad de empleos en pequeños negocios, asentado en la localidad de Guaminí y los alrededores",
 };
 
 // Layout

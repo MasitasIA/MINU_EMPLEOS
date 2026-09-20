@@ -1,12 +1,4 @@
 /**
- * Valida si un DNI tiene el formato correcto (solo números, entre 7 y 9 dígitos).
- */
-export function validateDNI(dni: string): boolean {
-  const dniRegex = /^\d{7,9}$/;
-  return dniRegex.test(dni);
-}
-
-/**
  * Valida si una contraseña es segura.
  * Criterios: Mínimo 8 caracteres, al menos una mayúscula, un número y un caracter especial.
  */
@@ -59,4 +51,12 @@ export function validateUsername(username: string): {
     return { isValid: false, message: "El nombre de usuario solo puede contener letras, números y guiones bajos sin espacios." };
   }
   return { isValid: true, message: "Nombre de usuario válido." };
+}
+
+/**
+ * Valida si un teléfono tiene un formato correcto.
+ */
+export function validatePhone(phone: string): boolean {
+  const phoneRegex = /^[\d\+\-\s]{7,15}$/;
+  return phoneRegex.test(phone);
 }

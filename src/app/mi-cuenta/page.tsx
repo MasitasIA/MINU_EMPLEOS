@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/session";
-import { User, Package, Settings, LogOut } from "lucide-react";
+import { User, Briefcase, Settings, LogOut, FileText } from "lucide-react";
 import Link from "next/link";
-import { logoutUser } from "@/app/actions/auth";
+import { logoutUser, getProfile } from "@/app/actions/auth";
+import { EditProfileForm } from "@/components/job-portal/EditProfileForm";
 
 export const metadata = {
-  title: "Mi Cuenta | Minú Market",
+  title: "Mi Cuenta | Minú Empleos",
 };
 
 export default async function MiCuentaPage() {
@@ -15,6 +16,8 @@ export default async function MiCuentaPage() {
   if (!user) {
     redirect("/iniciar");
   }
+
+  const profile = await getProfile(user.id);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
@@ -45,18 +48,11 @@ export default async function MiCuentaPage() {
                 Mi Perfil
               </Link>
               <Link
-                href="/mi-cuenta/compras"
+                href="/mis-postulaciones"
                 className="flex items-center gap-2 radius-button px-4 py-2 font-medium text-foreground-muted hover:bg-surface-muted hover:text-foreground"
               >
-                <Package className="h-4 w-4" />
-                Mis Compras
-              </Link>
-              <Link
-                href="/mi-cuenta/ajustes"
-                className="flex items-center gap-2 radius-button px-4 py-2 font-medium text-foreground-muted hover:bg-surface-muted hover:text-foreground"
-              >
-                <Settings className="h-4 w-4" />
-                Ajustes
+                <Briefcase className="h-4 w-4" />
+                Mis Postulaciones
               </Link>
             </nav>
 
@@ -77,46 +73,29 @@ export default async function MiCuentaPage() {
         {/* Contenido principal */}
         <div className="md:col-span-2 space-y-6">
           <div className="radius-predefined bg-white p-6 shadow-sm ring-1 ring-border">
-            <h2 className="mb-4 text-xl font-bold text-foreground">
-              Información Personal
+            <h2 className="mb-6 text-xl font-bold text-foreground">
+              Mi Currículum y Perfil
             </h2>
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4 border-b border-border pb-4">
-                <div className="font-medium text-foreground-muted">
-                  ID de Usuario
-                </div>
-                <div className="col-span-2 font-mono text-sm text-foreground">
-                  {user.id}
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4 border-b border-border pb-4">
-                <div className="font-medium text-foreground-muted">Usuario</div>
-                <div className="col-span-2 font-medium text-foreground">
-                  @{user.username}
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4 pb-2">
-                <div className="font-medium text-foreground-muted">Email</div>
-                <div className="col-span-2 font-medium text-foreground">
-                  {user.email}
-                </div>
-              </div>
-            </div>
+            {profile ? (
+              <EditProfileForm initialData={profile} />
+            ) : (
+              <p>Error cargando el perfil.</p>
+            )}
           </div>
 
           <div className="radius-predefined border border-primary/20 bg-primary/5 p-6 shadow-sm">
             <h2 className="mb-2 text-lg font-bold text-primary">
-              ¿Tienes un comercio local?
+              ¿Eres una empresa?
             </h2>
             <p className="text-foreground-muted mb-4">
-              Puedes empezar a vender tus productos en Minú Market de forma
-              gratuita y llegar a todos tus vecinos.
+              Puedes empezar a publicar ofertas de empleo en Minú Empleos de
+              forma gratuita y encontrar el talento que necesitas.
             </p>
             <Link
-              href="/panel-tienda"
+              href="/panel-empresa"
               className="inline-flex radius-button bg-primary px-6 py-2.5 font-bold text-white transition-transform hover:scale-105 active:scale-95 shadow-md shadow-primary/20"
             >
-              Crear mi Tienda
+              Registrar mi Empresa
             </Link>
           </div>
         </div>

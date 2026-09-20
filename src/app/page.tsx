@@ -1,18 +1,22 @@
-// Importaciones
-import { Hero } from "@/components/marketplace/Hero";
-import { FeaturedStores } from "@/components/marketplace/FeaturedStores";
-import { TopProducts } from "@/components/marketplace/TopProducts";
+import { Hero } from "@/components/job-portal/Hero";
+import { TopJobs } from "@/components/job-portal/TopJobs";
+import { FeaturedCompanies } from "@/components/job-portal/FeaturedCompanies";
+import { getAllJobs } from "@/app/actions/jobs";
+import { getAllCompanies } from "@/app/actions/companies";
 
-// Componente de Página Principal
-export default function Home() {
-  // Renderizado
+export default async function Home() {
+  const jobs = await getAllJobs();
+  const companies = await getAllCompanies();
+
+  // Tomamos los 6 más recientes como destacados/top
+  const topJobs = jobs.slice(0, 6);
+  const featuredCompanies = companies.slice(0, 4);
+
   return (
-    <div className="flex flex-col">
-      <main className="flex-1">
-        <Hero />
-        <FeaturedStores />
-        <TopProducts />
-      </main>
-    </div>
+    <main>
+      <Hero />
+      <TopJobs jobs={topJobs} />
+      <FeaturedCompanies companies={featuredCompanies} />
+    </main>
   );
 }

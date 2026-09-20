@@ -1,17 +1,14 @@
 "use client";
 
-// Importaciones
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, User, Search, LayoutGrid, Store } from "lucide-react";
+import { User, Search, Briefcase, Building, FileText } from "lucide-react";
 import Image from "next/image";
 import { AuthModal } from "@/components/ui/AuthModal";
 import { UserSession } from "@/lib/session";
 
-// Componente del Navbar
 export function Navbar({ user }: { user: UserSession | null }) {
-  // Lógica y Estado
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -19,11 +16,10 @@ export function Navbar({ user }: { user: UserSession | null }) {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/productos?q=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/empleos?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
-  // Renderizado
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b border-border bg-white/80 backdrop-blur-md shadow-sm">
@@ -32,7 +28,7 @@ export function Navbar({ user }: { user: UserSession | null }) {
           <Link href="/" className="flex items-center gap-2">
             <Image
               src="/Logo.svg"
-              alt="Minú Market Logo"
+              alt="Minú Empleos Logo"
               width={120}
               height={120}
               className="w-20 h-20 md:w-24 md:h-24"
@@ -46,9 +42,9 @@ export function Navbar({ user }: { user: UserSession | null }) {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar productos, tiendas..."
+                placeholder="Buscar empleos o empresas..."
                 className="w-full radius-predefined border border-border bg-surface-muted py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
-                aria-label="Buscar productos o tiendas"
+                aria-label="Buscar empleos o empresas"
               />
               <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-subtle" />
             </form>
@@ -57,24 +53,36 @@ export function Navbar({ user }: { user: UserSession | null }) {
           {/* Acciones */}
           <div className="flex items-center gap-1 sm:gap-4">
             <Link
-              href="/productos"
+              href="/empleos"
               className="flex items-center gap-1.5 radius-button p-2 text-foreground-muted transition-colors hover:bg-surface-muted hover:text-primary"
             >
-              <LayoutGrid className="h-5 w-5 sm:hidden" />
+              <Briefcase className="h-5 w-5 sm:hidden" />
               <span className="hidden text-sm font-medium sm:block">
-                Productos
+                Empleos
               </span>
             </Link>
 
             <Link
-              href="/panel-tienda"
+              href="/panel-empresa"
               className="flex items-center gap-1.5 radius-button p-2 text-foreground-muted transition-colors hover:bg-surface-muted hover:text-primary"
             >
-              <Store className="h-5 w-5 sm:hidden" />
+              <Building className="h-5 w-5 sm:hidden" />
               <span className="hidden text-sm font-medium sm:block">
-                Gestión
+                Para Empresas
               </span>
             </Link>
+
+            {user && (
+              <Link
+                href="/mis-postulaciones"
+                className="flex items-center gap-1.5 radius-button p-2 text-foreground-muted transition-colors hover:bg-surface-muted hover:text-primary"
+              >
+                <FileText className="h-5 w-5 sm:hidden" />
+                <span className="hidden text-sm font-medium sm:block">
+                  Mis Postulaciones
+                </span>
+              </Link>
+            )}
 
             <div className="h-6 w-px bg-border hidden sm:block"></div>
 
@@ -98,16 +106,6 @@ export function Navbar({ user }: { user: UserSession | null }) {
                 </span>
               </button>
             )}
-
-            <button
-              aria-label="Ver carrito"
-              className="relative flex items-center justify-center radius-button bg-primary/10 p-2 text-primary transition-colors hover:bg-primary/20 sm:p-2.5"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center radius-predefined bg-primary text-[10px] font-bold text-white">
-                0
-              </span>
-            </button>
           </div>
         </div>
 
@@ -118,7 +116,7 @@ export function Navbar({ user }: { user: UserSession | null }) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar..."
+              placeholder="Buscar empleos..."
               className="w-full radius-predefined border border-border bg-surface-muted py-2.5 pl-10 pr-4 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
               aria-label="Buscar en móvil"
             />
