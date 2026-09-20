@@ -1,8 +1,11 @@
 import { getUser } from "@/lib/session";
 import { getCompanyByOwner } from "@/app/actions/companies";
+import { getJobsByCompany } from "@/app/actions/jobs";
+import { getApplicationsForCompany } from "@/app/actions/applications";
 import { getAllLocalities } from "@/app/actions/localities";
 import { redirect } from "next/navigation";
 import { CreateCompanyForm } from "@/components/job-portal/CreateCompanyForm";
+import { JobActions } from "@/components/job-portal/JobActions";
 import Link from "next/link";
 import { PlusCircle, Briefcase, Settings, Users, Star } from "lucide-react";
 
@@ -18,6 +21,14 @@ export default async function CompanyPanelPage() {
 
   const company = await getCompanyByOwner(user.id);
   const localities = await getAllLocalities();
+  
+  let jobs: any[] = [];
+  let applications: any[] = [];
+  
+  if (company) {
+    jobs = await getJobsByCompany(company.id);
+    applications = await getApplicationsForCompany(company.id);
+  }
 
   return (
     <div className="bg-surface-muted min-h-screen py-12">
@@ -73,7 +84,7 @@ export default async function CompanyPanelPage() {
                   <Briefcase className="h-5 w-5 mr-2" />
                   <h3 className="font-semibold text-sm">Empleos Activos</h3>
                 </div>
-                <p className="text-3xl font-bold text-foreground">0</p>
+                <p className="text-3xl font-bold text-foreground">{jobs.length}</p>
               </div>
 
               <div className="radius-predefined bg-white p-6 shadow-sm border border-border">
@@ -81,10 +92,8 @@ export default async function CompanyPanelPage() {
                   <Users className="h-5 w-5 mr-2" />
                   <h3 className="font-semibold text-sm">Postulaciones Recibidas</h3>
                 </div>
-                <p className="text-3xl font-bold text-foreground">0</p>
+                <p className="text-3xl font-bold text-foreground">{applications.length}</p>
               </div>
-
-
             </div>
 
             <div className="radius-predefined bg-white shadow-sm border border-border overflow-hidden">
@@ -93,16 +102,55 @@ export default async function CompanyPanelPage() {
                   Tus Ofertas de Empleo
                 </h3>
               </div>
-              <div className="p-12 text-center text-foreground-muted">
-                <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                <p>Aún no has publicado ninguna oferta de empleo.</p>
-                <Link
-                  href="/panel-empresa/empleos/nuevo"
-                  className="text-primary hover:underline font-semibold mt-2 inline-block"
-                >
-                  Publica tu primer empleo
-                </Link>
-              </div>
+              
+              {jobs.length === 0 ? (
+                <div className="p-12 text-center text-foreground-muted">
+                  <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                  <p>Aún no has publicado ninguna oferta de empleo.</p>
+                  <Link
+                    href="/panel-empresa/empleos/nuevo"
+                    className="text-primary hover:underline font-semibold mt-2 inline-block"
+                  >
+                    Publica tu primer empleo
+                  </Link>
+                </div>
+              ) : (
+                <ul className="divide-y divide-border">
+                  {jobs.map((job) => (
+                    <li key={job.id} className="p-6 hover:bg-surface-muted transition-colors">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <Link href={`/empleos/${job.slug}`} className="text-lg font-bold text-primary hover:underline">
+                            {job.name}
+                          </Link>
+                          <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-foreground-muted">
+                            <span className="flex items-center gap-1">
+                              <Star className="h-4 w-4" /> {job.categories?.name || 'Categoría no definida'}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              {job.is_active ? (
+                                <span className="text-green-600 font-semibold">• Activo</span>
+                              ) : (
+                                <span className="text-amber-500 font-semibold">• Pausado</span>
+                              )}
+                            </span>
+                            <div className="text-sm font-bold text-foreground bg-surface px-3 py-0.5 rounded-full ring-1 ring-border shadow-sm">
+                              {applications.filter(a => a.job_id === job.id).length} postulaciones
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <JobActions 
+                          jobId={job.id} 
+                          jobSlug={job.slug} 
+                          isActive={job.is_active} 
+                          jobName={job.name}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         )}

@@ -11,9 +11,10 @@ Este archivo proporciona contexto y reglas específicas para los agentes de IA q
 
 ## 2. Arquitectura de Supabase (Portal de Empleos)
 - `profiles`: Maneja perfiles de candidatos (`full_name`, `phone`, `bio`, `title`, `is_public`, `resume_url`).
-- `companies`: Perfiles de empresas reclutadoras (`phone`, `website`, logo, cover).
-- `jobs`: Ofertas laborales (`address`, etc).
-- `applications`: Relación entre `profiles` y `jobs` (Estado de postulaciones, CV adjunto).
+- `companies`: Perfiles de empresas reclutadoras. Incluye tamaño, rubro (category_id), localidad (locality_id), contacto (`phone`, `website`), dirección, redes sociales (`linkedin_url`, `social_urls`) logo y cover.
+- `jobs`: Ofertas laborales (Incluye vacantes, modalidad, tipo de empleo, `address`, categoría y localidad).
+- `applications`: Relación entre `profiles` y `jobs` (Estado de postulaciones, CV adjunto y `cover_letter`).
+- `application_events`: Registra el historial de cambios de estado de una postulación (`event_type`, `new_status`, `notes`).
 - **Storage**: Uso del bucket `RESUMES` para almacenar los CVs en formato PDF y el bucket `PROFILES` para los logos de las empresas.
 
 ## 3. Reglas de Desarrollo Frontend

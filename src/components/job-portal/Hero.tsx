@@ -1,11 +1,12 @@
 import { Tag } from "lucide-react";
-import { getPopularCategories } from "@/app/actions/categories";
+import { getPopularCategories, getAllCategories } from "@/app/actions/categories";
 import { getAllLocalities } from "@/app/actions/localities";
 import { HeroSearch } from "./HeroSearch";
 import Link from "next/link";
 
 export async function Hero() {
   const popularCategories = await getPopularCategories(5);
+  const allCategories = await getAllCategories();
   const localities = await getAllLocalities();
 
   return (
@@ -34,7 +35,7 @@ export async function Hero() {
         </div>
 
         {/* Buscador integrado en Hero */}
-        <HeroSearch localities={localities} />
+        <HeroSearch categories={allCategories} localities={localities} />
 
         {/* Categorías */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm font-medium">
@@ -42,7 +43,7 @@ export async function Hero() {
           {popularCategories.map((cat) => (
             <Link
               key={cat.id}
-              href={`/empleos?category=${cat.slug}`}
+              href={`/empleos?category=${cat.id}`}
               className="radius-button bg-white px-4 py-1.5 text-foreground-muted shadow-sm ring-1 ring-border transition-all hover:text-primary hover:ring-primary/30 flex items-center gap-2"
             >
               {cat.icon ? <span>{cat.icon}</span> : <Tag className="h-4 w-4" />}{" "}

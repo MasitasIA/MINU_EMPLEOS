@@ -20,14 +20,24 @@ interface CompanyData {
   image_url?: string;
   cover_url?: string;
   is_verified?: boolean;
+  locality_id?: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  size?: string;
+  linkedin_url?: string;
+  social_urls?: any;
+  is_active?: boolean;
 }
 
 export function CompanySettingsForm({
   company,
   categories,
+  localities,
 }: {
   company: CompanyData;
   categories: Category[];
+  localities: { id: string; ciudad: string }[];
 }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -45,10 +55,18 @@ export function CompanySettingsForm({
     category_id: company.category_id || "",
     image_url: company.image_url || "",
     cover_url: company.cover_url || "",
+    locality_id: company.locality_id || "",
+    address: company.address || "",
+    phone: company.phone || "",
+    website: company.website || "",
+    size: company.size || "",
+    linkedin_url: company.linkedin_url || "",
+    is_active: company.is_active !== undefined ? company.is_active : true,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const value = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
+    setFormData({ ...formData, [e.target.name]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -192,6 +210,105 @@ export function CompanySettingsForm({
               ))}
             </select>
           </div>
+          
+          <div className="sm:col-span-1">
+            <label htmlFor="locality_id" className="mb-1 block text-sm font-bold text-foreground">
+              Localidad / Ciudad <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="locality_id"
+              name="locality_id"
+              required
+              value={formData.locality_id}
+              onChange={handleChange}
+              className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="">Selecciona la ubicación</option>
+              {localities.map((loc) => (
+                <option key={loc.id} value={loc.id}>{loc.ciudad}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="sm:col-span-1">
+            <label htmlFor="address" className="mb-1 block text-sm font-bold text-foreground">
+              Dirección de la Empresa (Opcional)
+            </label>
+            <input
+              id="address"
+              name="address"
+              type="text"
+              maxLength={150}
+              value={formData.address}
+              onChange={handleChange}
+              className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+
+          <div className="sm:col-span-1">
+            <label htmlFor="size" className="mb-1 block text-sm font-bold text-foreground">
+              Tamaño de la Empresa
+            </label>
+            <select
+              id="size"
+              name="size"
+              value={formData.size}
+              onChange={handleChange}
+              className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="">Selecciona el tamaño</option>
+              <option value="1-10">1-10 empleados (Micro)</option>
+              <option value="11-50">11-50 empleados (Pequeña)</option>
+              <option value="51-200">51-200 empleados (Mediana)</option>
+              <option value="201-500">201-500 empleados (Grande)</option>
+              <option value="500+">500+ empleados (Corporación)</option>
+            </select>
+          </div>
+
+          <div className="sm:col-span-1">
+            <label htmlFor="phone" className="mb-1 block text-sm font-bold text-foreground">
+              Teléfono de Contacto
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="text"
+              maxLength={50}
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          
+          <div className="sm:col-span-1">
+            <label htmlFor="website" className="mb-1 block text-sm font-bold text-foreground">
+              Sitio Web
+            </label>
+            <input
+              id="website"
+              name="website"
+              type="url"
+              maxLength={150}
+              value={formData.website}
+              onChange={handleChange}
+              className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          
+          <div className="sm:col-span-1">
+            <label htmlFor="linkedin_url" className="mb-1 block text-sm font-bold text-foreground">
+              Perfil de LinkedIn
+            </label>
+            <input
+              id="linkedin_url"
+              name="linkedin_url"
+              type="url"
+              maxLength={150}
+              value={formData.linkedin_url}
+              onChange={handleChange}
+              className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
 
           {/* Imagen de Portada */}
           <div className="sm:col-span-1">
@@ -219,6 +336,30 @@ export function CompanySettingsForm({
               bucketName="PROFILES"
               folderPath="companies"
             />
+          </div>
+
+          {/* Visibilidad de la Empresa */}
+          <div className="sm:col-span-2 pt-4 border-t border-border mt-2">
+            <div className="flex items-start gap-3">
+              <div className="flex h-6 items-center">
+                <input
+                  id="is_active"
+                  name="is_active"
+                  type="checkbox"
+                  checked={formData.is_active}
+                  onChange={handleChange}
+                  className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                />
+              </div>
+              <div>
+                <label htmlFor="is_active" className="text-sm font-bold text-foreground cursor-pointer">
+                  Empresa Visible al Público
+                </label>
+                <p className="text-sm text-foreground-muted mt-1">
+                  Si desactivas esta opción, tu empresa y sus ofertas de empleo dejarán de ser visibles para los candidatos, pero podrás reactivarla en cualquier momento.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 

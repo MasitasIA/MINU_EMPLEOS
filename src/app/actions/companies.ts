@@ -51,6 +51,9 @@ export async function createCompany(companyData: {
   address?: string;
   phone?: string;
   website?: string;
+  size?: string;
+  linkedin_url?: string;
+  social_urls?: any;
 }) {
   try {
     const user = await getUser();
@@ -93,6 +96,9 @@ export async function createCompany(companyData: {
       address: companyData.address || null,
       phone: companyData.phone || null,
       website: companyData.website || null,
+      size: companyData.size || null,
+      linkedin_url: companyData.linkedin_url || null,
+      social_urls: companyData.social_urls || {},
     });
 
     if (insertError) {
@@ -121,6 +127,7 @@ export async function getAllCompanies() {
     const { data, error } = await supabase
       .from("companies")
       .select("*, categories(name)")
+      .eq("is_active", true)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -143,7 +150,7 @@ export async function getCompanyById(slug: string) {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("companies")
-      .select("*")
+      .select("*, localities(ciudad), categories(name)")
       .eq("id", slug)
       .maybeSingle();
 
@@ -168,10 +175,16 @@ export async function updateCompany(oldSlug: string, companyData: {
   description: string;
   detailed_description?: string;
   category_id?: string;
+  locality_id?: string;
   image_url?: string;
   cover_url?: string;
+  address?: string;
   phone?: string;
   website?: string;
+  size?: string;
+  linkedin_url?: string;
+  social_urls?: any;
+  is_active?: boolean;
 }) {
   try {
     const user = await getUser();
@@ -213,10 +226,16 @@ export async function updateCompany(oldSlug: string, companyData: {
         description: companyData.description,
         detailed_description: companyData.detailed_description || null,
         category_id: companyData.category_id || null,
+        locality_id: companyData.locality_id || null,
         image_url: companyData.image_url || null,
         cover_url: companyData.cover_url || null,
+        address: companyData.address || null,
         phone: companyData.phone || null,
         website: companyData.website || null,
+        size: companyData.size || null,
+        linkedin_url: companyData.linkedin_url || null,
+        social_urls: companyData.social_urls || {},
+        is_active: companyData.is_active !== undefined ? companyData.is_active : true,
       })
       .eq("id", oldSlug);
 

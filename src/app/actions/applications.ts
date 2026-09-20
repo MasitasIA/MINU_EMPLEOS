@@ -122,7 +122,7 @@ export async function getApplicationsForJob(jobId: string) {
 
     const { data, error } = await supabase
       .from("applications")
-      .select("*, profiles(full_name, title, resume_url)")
+      .select("*, profiles(full_name, title, resume_url, phone, bio)")
       .eq("job_id", jobId)
       .order("created_at", { ascending: false });
 
@@ -168,7 +168,7 @@ export async function getApplicationsForCompany(companyId: string) {
 
     const { data, error } = await supabase
       .from("applications")
-      .select("*, profiles(full_name, title, resume_url), jobs(name, slug)")
+      .select("*, profiles(full_name, title, resume_url, phone, bio), jobs(name, slug)")
       .in("job_id", jobIds)
       .order("created_at", { ascending: false });
 
@@ -184,7 +184,7 @@ export async function getApplicationsForCompany(companyId: string) {
   }
 }
 
-export async function updateApplicationStatus(applicationId: string, status: 'pending' | 'accepted' | 'rejected') {
+export async function updateApplicationStatus(applicationId: string, status: 'pending' | 'reviewed' | 'accepted' | 'rejected') {
     try {
         const user = await getUser();
         if (!user) return { success: false };
@@ -201,6 +201,15 @@ export async function updateApplicationStatus(applicationId: string, status: 'pe
           console.error("Error actualizando postulación:", error);
           return { success: false };
         }
+        
+        // Registrar el evento
+        await supabase.from("application_events").insert({
+          application_id: applicationId,
+          event_type: 'status_change',
+          new_status: status,
+          created_by: user.id,
+          notes: `Estado cambiado a ${status}`
+        });
     
         revalidatePath(`/panel-empresa`);
         return { success: true };

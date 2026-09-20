@@ -19,6 +19,10 @@ export function CreateCompanyForm({ localities = [] }: CreateCompanyFormProps) {
     detailed_description: "",
     locality_id: "",
     address: "",
+    phone: "",
+    website: "",
+    size: "",
+    linkedin_url: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -146,6 +150,76 @@ export function CreateCompanyForm({ localities = [] }: CreateCompanyFormProps) {
             placeholder="Ej. Av. Siempreviva 742"
             className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
           />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label htmlFor="phone" className="mb-1 block text-sm font-bold text-foreground">
+              Teléfono (Opcional)
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="text"
+              maxLength={50}
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Ej. +54 9 11 1234-5678"
+              className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <div>
+            <label htmlFor="size" className="mb-1 block text-sm font-bold text-foreground">
+              Tamaño de la Empresa (Opcional)
+            </label>
+            <select
+              id="size"
+              name="size"
+              value={formData.size}
+              onChange={handleChange}
+              className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="">Selecciona el tamaño</option>
+              <option value="1-10">1-10 empleados (Micro)</option>
+              <option value="11-50">11-50 empleados (Pequeña)</option>
+              <option value="51-200">51-200 empleados (Mediana)</option>
+              <option value="201-500">201-500 empleados (Grande)</option>
+              <option value="500+">500+ empleados (Corporación)</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label htmlFor="website" className="mb-1 block text-sm font-bold text-foreground">
+              Sitio Web (Opcional)
+            </label>
+            <input
+              id="website"
+              name="website"
+              type="url"
+              maxLength={150}
+              value={formData.website}
+              onChange={handleChange}
+              placeholder="Ej. https://tuempresa.com"
+              className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <div>
+            <label htmlFor="linkedin_url" className="mb-1 block text-sm font-bold text-foreground">
+              LinkedIn (Opcional)
+            </label>
+            <input
+              id="linkedin_url"
+              name="linkedin_url"
+              type="url"
+              maxLength={150}
+              value={formData.linkedin_url}
+              onChange={handleChange}
+              placeholder="Ej. https://linkedin.com/company/tuempresa"
+              className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
         </div>
 
         <button

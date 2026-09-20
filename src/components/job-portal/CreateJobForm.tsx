@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createJob } from "@/app/actions/jobs";
-import { Loader2, PlusCircle, AlertTriangle } from "lucide-react";
+import { createJob, updateJob } from "@/app/actions/jobs";
+import { Loader2, PlusCircle, AlertTriangle, Save } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
@@ -11,25 +11,27 @@ interface CreateJobFormProps {
   companyId: string;
   categories: { id: string; name: string }[];
   localities: { id: string; ciudad: string }[];
+  initialData?: any;
 }
 
-export function CreateJobForm({ companyId, categories, localities }: CreateJobFormProps) {
+export function CreateJobForm({ companyId, categories, localities, initialData }: CreateJobFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const [formData, setFormData] = useState({
     company_id: companyId,
-    category_id: "",
-    locality_id: "",
-    name: "",
-    description: "",
-    requirements: "",
-    salary_min: "",
-    salary_max: "",
-    vacancies: "1",
-    job_type: "Full-time",
-    modality: "Presencial",
+    category_id: initialData?.category_id || "",
+    locality_id: initialData?.locality_id || "",
+    name: initialData?.name || "",
+    description: initialData?.description || "",
+    requirements: initialData?.requirements || "",
+    salary_min: initialData?.salary_min?.toString() || "",
+    salary_max: initialData?.salary_max?.toString() || "",
+    vacancies: initialData?.vacancies?.toString() || "1",
+    job_type: initialData?.job_type || "Full-time",
+    modality: initialData?.modality || "Presencial",
+    address: initialData?.address || "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -48,13 +50,18 @@ export function CreateJobForm({ companyId, categories, localities }: CreateJobFo
       vacancies: parseInt(formData.vacancies),
     };
 
-    const response = await createJob(submitData);
+    let response;
+    if (initialData?.id) {
+      response = await updateJob(initialData.id, submitData);
+    } else {
+      response = await createJob(submitData);
+    }
 
     if (response.success) {
       router.push("/panel-empresa");
       router.refresh();
     } else {
-      setErrorMsg(response.error || "Ocurrió un error al crear la oferta.");
+      setErrorMsg(response.error || "Ocurrió un error al guardar la oferta.");
       setIsLoading(false);
     }
   };
@@ -152,6 +159,17 @@ export function CreateJobForm({ companyId, categories, localities }: CreateJobFo
               <option value="Remoto">Remoto</option>
             </select>
           </div>
+          
+          <div className="sm:col-span-2">
+            <Input
+              label="Dirección Específica (Opcional)"
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              placeholder="Ej. Calle Falsa 123, Piso 4"
+            />
+          </div>
         </div>
 
         <div>
@@ -227,8 +245,8 @@ export function CreateJobForm({ companyId, categories, localities }: CreateJobFo
           type="submit"
           isLoading={isLoading}
         >
-          {!isLoading && <PlusCircle className="mr-2 h-4 w-4" />}
-          {isLoading ? "Publicando..." : "Publicar Oferta"}
+          {!isLoading && (initialData ? <Save className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />)}
+          {isLoading ? (initialData ? "Guardando..." : "Publicando...") : (initialData ? "Guardar Cambios" : "Publicar Oferta")}
         </Button>
       </div>
     </form>

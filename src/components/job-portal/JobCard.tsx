@@ -41,6 +41,7 @@ export function JobCard({
                 src={companyImage}
                 alt={companyName}
                 fill
+                sizes="48px"
                 className="object-cover"
               />
             ) : (

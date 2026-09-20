@@ -31,6 +31,7 @@ export function Navbar({ user }: { user: UserSession | null }) {
               alt="Minú Empleos Logo"
               width={120}
               height={120}
+              priority
               className="w-20 h-20 md:w-24 md:h-24"
             />
           </Link>

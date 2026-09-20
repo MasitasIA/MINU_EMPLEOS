@@ -77,7 +77,7 @@ export default async function MiCuentaPage() {
               Mi Currículum y Perfil
             </h2>
             {profile ? (
-              <EditProfileForm initialData={profile} />
+              <EditProfileForm initialData={profile} email={user.email} />
             ) : (
               <p>Error cargando el perfil.</p>
             )}

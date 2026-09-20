@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
-export function EditProfileForm({ initialData }: { initialData: any }) {
+export function EditProfileForm({ initialData, email }: { initialData: any, email?: string }) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     full_name: initialData?.full_name || "",
@@ -167,6 +167,20 @@ export function EditProfileForm({ initialData }: { initialData: any }) {
           onChange={handleChange}
           placeholder="Juan Pérez"
         />
+
+        {/* Correo Electrónico (Solo lectura) */}
+        {email && (
+          <Input
+            label="Correo Electrónico"
+            id="email"
+            name="email"
+            value={email}
+            onChange={() => {}}
+            disabled
+            placeholder="tu@correo.com"
+            className="cursor-not-allowed opacity-70"
+          />
+        )}
 
         {/* Teléfono */}
         <Input

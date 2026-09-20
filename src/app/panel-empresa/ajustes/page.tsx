@@ -1,6 +1,7 @@
 import { getUser } from "@/lib/session";
 import { getCompanyByOwner } from "@/app/actions/companies";
 import { getAllCategories } from "@/app/actions/categories";
+import { getAllLocalities } from "@/app/actions/localities";
 import { redirect } from "next/navigation";
 import { CompanySettingsForm } from "@/components/job-portal/CompanySettingsForm";
 
@@ -20,6 +21,7 @@ export default async function CompanySettingsPage() {
   }
 
   const categories = await getAllCategories();
+  const localities = await getAllLocalities();
 
   return (
     <div className="bg-surface-muted min-h-screen py-12">
@@ -33,7 +35,7 @@ export default async function CompanySettingsPage() {
           </p>
         </div>
 
-        <CompanySettingsForm company={company} categories={categories} />
+        <CompanySettingsForm company={company} categories={categories} localities={localities} />
       </div>
     </div>
   );

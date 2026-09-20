@@ -84,7 +84,7 @@ export default async function JobPage({
                 <div className="flex flex-wrap gap-3 mt-4">
                   <div className="flex items-center gap-1.5 radius-predefined bg-surface-muted px-3 py-1.5 text-sm font-medium text-foreground-muted">
                     <MapPin className="h-4 w-4" />
-                    {job.localities?.ciudad || job.modality}
+                    {job.localities?.ciudad || job.modality} {job.address ? `- ${job.address}` : ""}
                   </div>
                   <div className="flex items-center gap-1.5 radius-predefined bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
                     <Briefcase className="h-4 w-4" />
