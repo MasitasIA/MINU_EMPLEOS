@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Minú Empleos
 
-## Getting Started
+Plataforma moderna de portal de empleos que conecta el talento local con las mejores empresas. Desarrollado con el fin de proporcionar un diseño premium, fluido y fácil de usar tanto para candidatos como para reclutadores.
 
-First, run the development server:
+## 🚀 Tecnologías Principales
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Framework**: [Next.js 14+](https://nextjs.org/) (App Router)
+- **Lenguaje**: [TypeScript](https://www.typescriptlang.org/)
+- **Base de Datos y Autenticación**: [Supabase](https://supabase.com/)
+- **Estilos**: [Tailwind CSS](https://tailwindcss.com/)
+- **Iconos**: [Lucide React](https://lucide.dev/)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📂 Características
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Para Candidatos**: 
+  - Registro seguro.
+  - Perfiles personalizables (Biografía, título, datos de contacto).
+  - Subida y gestión de Currículum Vitae (CV) en formato PDF almacenado de forma segura.
+  - Catálogo interactivo de empleos con filtros de búsqueda avanzada.
+  - Gestión y seguimiento de "Mis Postulaciones".
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Para Empresas**:
+  - Panel de control exclusivo (`/panel-empresa`).
+  - Creación de perfil de reclutador con logo y portada.
+  - Publicación y gestión de Ofertas Laborales.
+  - Revisión de candidatos por oferta, con vista integrada del CV y estados de postulación ("Pendiente", "Visto", "Aceptado", "Rechazado").
 
-## Learn More
+## ⚙️ Configuración para Desarrollo Local
 
-To learn more about Next.js, take a look at the following resources:
+Sigue estos pasos para correr el proyecto en tu entorno local:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Clona el repositorio** e instala las dependencias:
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Configura las variables de entorno**:
+   Crea un archivo `.env.local` en la raíz del proyecto y añade tus credenciales de Supabase:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
+   ```
 
-## Deploy on Vercel
+3. **Inicia el servidor de desarrollo**:
+   ```bash
+   npm run dev
+   ```
+   Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la plataforma en funcionamiento.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## ☁️ Instrucciones de Despliegue (Cloudflare Pages / Vercel)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Para desplegar este proyecto en plataformas como **Cloudflare Pages** o **Vercel**, debes asegurarte de lo siguiente:
+
+1. Conecta tu repositorio de GitHub a la plataforma de despliegue elegida.
+2. Configura el **Framework preset** como `Next.js`.
+3. El **Build command** debe ser: `npm run build`
+4. El **Output directory** suele detectarse automáticamente (para Cloudflare Pages con Next.js edge/static puede requerir configurar el adaptador de `@cloudflare/next-on-pages`, pero por defecto para Node/Next suele ser `.next` en Vercel).
+5. **¡Importante! Variables de Entorno**:
+   Asegúrate de configurar las siguientes variables de entorno en el panel de control de tu plataforma de hosting (Cloudflare/Vercel) antes de hacer el primer despliegue:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+6. Guarda e inicia el despliegue.
+
+## 🛡️ Estructura de Seguridad (Supabase RLS)
+
+El proyecto utiliza **Row Level Security (RLS)** estricto en la base de datos de Supabase. Esto asegura que:
+- Los **CVs (`resume_url`)** son privados y solo accesibles a través de URLs firmadas temporales para el propietario o la empresa reclutadora.
+- Los **Perfiles de Empresa** pueden ser editados solo por el `owner_id`.
+- Las **Postulaciones** (`applications`) solo son visibles por el candidato que aplicó y la empresa dueña del empleo.
+
+## 📄 Licencia y Aspectos Legales
+
+Este proyecto respeta los lineamientos de las Leyes de Argentina N° 25.326 y N° 23.592. Se requiere y solicita el consentimiento expreso de los usuarios al registrarse.
