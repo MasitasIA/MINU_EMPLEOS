@@ -28,8 +28,8 @@ interface Application {
 }
 
 interface ApplicationsListProps {
-  jobId: string;
-  jobName: string;
+  jobId?: string;
+  jobName?: string;
   initialApplications: Application[];
 }
 
@@ -103,23 +103,27 @@ export function ApplicationsList({
 
   return (
     <div>
-      <div className="mb-6">
-        <Link
-          href="/panel-empresa"
-          className="inline-flex items-center text-sm font-medium text-foreground-muted hover:text-primary transition-colors"
-        >
-          <ChevronLeft className="mr-1 h-4 w-4" /> Volver al panel
-        </Link>
-      </div>
+      {jobName && (
+        <>
+          <div className="mb-6">
+            <Link
+              href="/panel-empresa"
+              className="inline-flex items-center text-sm font-medium text-foreground-muted hover:text-primary transition-colors"
+            >
+              <ChevronLeft className="mr-1 h-4 w-4" /> Volver al panel
+            </Link>
+          </div>
 
-      <div className="mb-8 flex flex-col gap-2">
-        <h1 className="text-3xl font-extrabold text-foreground">
-          Postulaciones: {jobName}
-        </h1>
-        <p className="text-foreground-muted">
-          Revisa y gestiona los candidatos que se han postulado a esta oferta.
-        </p>
-      </div>
+          <div className="mb-8 flex flex-col gap-2">
+            <h1 className="text-3xl font-extrabold text-foreground">
+              Postulaciones: {jobName}
+            </h1>
+            <p className="text-foreground-muted">
+              Revisa y gestiona los candidatos que se han postulado a esta oferta.
+            </p>
+          </div>
+        </>
+      )}
 
       {applications.length === 0 ? (
         <div className="radius-predefined bg-white p-12 text-center ring-1 ring-border shadow-sm">

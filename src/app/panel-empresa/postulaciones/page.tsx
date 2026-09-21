@@ -49,7 +49,7 @@ export default async function PostulacionesPage() {
           </div>
         </div>
 
-        <ApplicationsList applications={applications} />
+        <ApplicationsList initialApplications={applications} />
       </div>
     </div>
   );
