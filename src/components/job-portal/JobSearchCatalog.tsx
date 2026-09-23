@@ -248,6 +248,7 @@ export function JobSearchCatalog({
                   salaryMin={job.salary_min}
                   salaryMax={job.salary_max}
                   locality={job.localities?.ciudad}
+                  category={job.categories?.name}
                 />
               ))}
             </div>

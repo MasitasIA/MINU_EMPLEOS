@@ -38,19 +38,21 @@ export async function Hero() {
         <HeroSearch categories={allCategories} localities={localities} />
 
         {/* Categorías */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm font-medium">
-          <span className="text-foreground-muted">Categorías populares:</span>
-          {popularCategories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/empleos?category=${cat.id}`}
-              className="radius-button bg-white px-4 py-1.5 text-foreground-muted shadow-sm ring-1 ring-border transition-all hover:text-primary hover:ring-primary/30 flex items-center gap-2"
-            >
-              {cat.icon ? <span>{cat.icon}</span> : <Tag className="h-4 w-4" />}{" "}
-              {cat.name}
-            </Link>
-          ))}
-        </div>
+        {popularCategories.length > 0 && (
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm font-medium">
+            <span className="text-foreground-muted">Categorías populares:</span>
+            {popularCategories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/empleos?category=${cat.id}`}
+                className="radius-button bg-white px-4 py-1.5 text-foreground-muted shadow-sm ring-1 ring-border transition-all hover:text-primary hover:ring-primary/30 flex items-center gap-2"
+              >
+                {cat.icon ? <span>{cat.icon}</span> : <Tag className="h-4 w-4" />}{" "}
+                {cat.name}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

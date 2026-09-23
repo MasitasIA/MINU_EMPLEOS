@@ -7,7 +7,14 @@ import { redirect } from "next/navigation";
 import { CreateCompanyForm } from "@/components/job-portal/CreateCompanyForm";
 import { JobActions } from "@/components/job-portal/JobActions";
 import Link from "next/link";
-import { PlusCircle, Briefcase, Settings, Users, Star } from "lucide-react";
+import {
+  PlusCircle,
+  Briefcase,
+  Settings,
+  Users,
+  Star,
+  Eye,
+} from "lucide-react";
 
 export const metadata = {
   title: "Panel de Empresa | Minú Empleos",
@@ -21,10 +28,10 @@ export default async function CompanyPanelPage() {
 
   const company = await getCompanyByOwner(user.id);
   const localities = await getAllLocalities();
-  
+
   let jobs: any[] = [];
   let applications: any[] = [];
-  
+
   if (company) {
     jobs = await getJobsByCompany(company.id);
     applications = await getApplicationsForCompany(company.id);
@@ -64,6 +71,12 @@ export default async function CompanyPanelPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Link
+                  href={`/empresas/${company.id}`}
+                  className="inline-flex items-center justify-center radius-button border border-border bg-white px-4 py-2.5 text-sm font-bold text-foreground shadow-sm transition-all hover:bg-surface-muted"
+                >
+                  <Eye className="mr-2 h-4 w-4" /> Ver Perfil
+                </Link>
+                <Link
                   href="/panel-empresa/ajustes"
                   className="inline-flex items-center justify-center radius-button border border-border bg-white px-4 py-2.5 text-sm font-bold text-foreground shadow-sm transition-all hover:bg-surface-muted"
                 >
@@ -84,15 +97,21 @@ export default async function CompanyPanelPage() {
                   <Briefcase className="h-5 w-5 mr-2" />
                   <h3 className="font-semibold text-sm">Empleos Activos</h3>
                 </div>
-                <p className="text-3xl font-bold text-foreground">{jobs.length}</p>
+                <p className="text-3xl font-bold text-foreground">
+                  {jobs.length}
+                </p>
               </div>
 
               <div className="radius-predefined bg-white p-6 shadow-sm border border-border">
                 <div className="flex items-center text-foreground-muted mb-2">
                   <Users className="h-5 w-5 mr-2" />
-                  <h3 className="font-semibold text-sm">Postulaciones Recibidas</h3>
+                  <h3 className="font-semibold text-sm">
+                    Postulaciones Recibidas
+                  </h3>
                 </div>
-                <p className="text-3xl font-bold text-foreground">{applications.length}</p>
+                <p className="text-3xl font-bold text-foreground">
+                  {applications.length}
+                </p>
               </div>
             </div>
 
@@ -102,7 +121,7 @@ export default async function CompanyPanelPage() {
                   Tus Ofertas de Empleo
                 </h3>
               </div>
-              
+
               {jobs.length === 0 ? (
                 <div className="p-12 text-center text-foreground-muted">
                   <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-20" />
@@ -117,33 +136,48 @@ export default async function CompanyPanelPage() {
               ) : (
                 <ul className="divide-y divide-border">
                   {jobs.map((job) => (
-                    <li key={job.id} className="p-6 hover:bg-surface-muted transition-colors">
+                    <li
+                      key={job.id}
+                      className="p-6 hover:bg-surface-muted transition-colors"
+                    >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                          <Link href={`/empleos/${job.slug}`} className="text-lg font-bold text-primary hover:underline">
+                          <Link
+                            href={`/empleos/${job.slug}`}
+                            className="text-lg font-bold text-primary hover:underline"
+                          >
                             {job.name}
                           </Link>
                           <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-foreground-muted">
                             <span className="flex items-center gap-1">
-                              <Star className="h-4 w-4" /> {job.categories?.name || 'Categoría no definida'}
+                              <Star className="h-4 w-4" />{" "}
+                              {job.categories?.name || "Categoría no definida"}
                             </span>
                             <span className="flex items-center gap-1">
                               {job.is_active ? (
-                                <span className="text-green-600 font-semibold">• Activo</span>
+                                <span className="text-green-600 font-semibold">
+                                  • Activo
+                                </span>
                               ) : (
-                                <span className="text-amber-500 font-semibold">• Pausado</span>
+                                <span className="text-amber-500 font-semibold">
+                                  • Pausado
+                                </span>
                               )}
                             </span>
                             <div className="text-sm font-bold text-foreground bg-surface px-3 py-0.5 rounded-full ring-1 ring-border shadow-sm">
-                              {applications.filter(a => a.job_id === job.id).length} postulaciones
+                              {
+                                applications.filter((a) => a.job_id === job.id)
+                                  .length
+                              }{" "}
+                              postulaciones
                             </div>
                           </div>
                         </div>
-                        
-                        <JobActions 
-                          jobId={job.id} 
-                          jobSlug={job.slug} 
-                          isActive={job.is_active} 
+
+                        <JobActions
+                          jobId={job.id}
+                          jobSlug={job.slug}
+                          isActive={job.is_active}
                           jobName={job.name}
                         />
                       </div>

@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import {
-  Star,
   MapPin,
   BadgeCheck,
   ShieldAlert,
@@ -12,7 +11,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { getCompanyById } from "@/app/actions/companies";
+import { getJobsByCompany } from "@/app/actions/jobs";
 import { getUser } from "@/lib/session";
+import { JobCard } from "@/components/job-portal/JobCard";
 
 export default async function CompanyPage({
   params,
@@ -21,7 +22,7 @@ export default async function CompanyPage({
 }) {
   const resolvedParams = await params;
 
-  // Obtenemos la empresa de la base de datos real
+  // Obtenemos la empresa de la base de datos
   const company = await getCompanyById(resolvedParams.id);
 
   if (!company) {
@@ -35,8 +36,13 @@ export default async function CompanyPage({
     notFound();
   }
 
-  // Cuando tengamos empleos en base de datos:
-  const companyJobs: any[] = [];
+  // Obtenemos los empleos de la empresa
+  const companyJobs = await getJobsByCompany(company.id);
+
+  // Construir la query para el mapa
+  const locationQuery = encodeURIComponent(
+    `${company.address ? company.address + ", " : ""}${company.localities?.ciudad ? company.localities.ciudad + ", " : ""}Buenos Aires, Argentina`,
+  );
 
   return (
     <div className="bg-surface-muted min-h-screen pb-16">
@@ -187,6 +193,28 @@ export default async function CompanyPage({
                 "Esta empresa no ha agregado una descripción detallada todavía."}
             </p>
           </div>
+
+          {/* Tarjeta "Ubicación" */}
+          <div className="radius-predefined bg-white p-6 shadow-sm ring-1 ring-border">
+            <h3 className="text-lg font-bold text-foreground mb-4 border-b border-border pb-2 flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" /> Ubicación
+            </h3>
+            <div className="w-full h-64 rounded-md overflow-hidden ring-1 ring-border bg-surface-muted">
+              <iframe
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                src={`https://maps.google.com/maps?q=${locationQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                title={`Ubicación de ${company.name}`}
+              ></iframe>
+            </div>
+            <p className="text-sm text-foreground-muted mt-3 font-medium flex items-center gap-1.5">
+              <MapPin className="h-4 w-4 shrink-0" />
+              {company.address ? `${company.address}, ` : ""}
+              {company.localities?.ciudad || "Ubicación no especificada"}
+            </p>
+          </div>
         </div>
 
         {/* Columna Derecha: Empleos */}
@@ -195,13 +223,34 @@ export default async function CompanyPage({
             Ofertas de Empleo
           </h2>
 
-          <div className="flex flex-col items-center justify-center p-12 text-center radius-predefined bg-white ring-1 ring-border border-dashed">
-            <Building className="h-12 w-12 text-border mb-4" />
-            <h3 className="text-lg font-bold text-foreground">Sin empleos</h3>
-            <p className="text-foreground-muted mt-2">
-              Esta empresa aún no ha publicado ofertas de empleo.
-            </p>
-          </div>
+          {companyJobs.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4">
+              {companyJobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  id={job.id}
+                  slug={job.slug}
+                  companyId={company.id}
+                  companyName={company.name}
+                  companyImage={company.image_url}
+                  name={job.name}
+                  jobType={job.job_type}
+                  modality={job.modality}
+                  salaryMin={job.salary_min}
+                  salaryMax={job.salary_max}
+                  locality={job.localities?.ciudad}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center p-12 text-center radius-predefined bg-white ring-1 ring-border border-dashed">
+              <Building className="h-12 w-12 text-border mb-4" />
+              <h3 className="text-lg font-bold text-foreground">Sin empleos</h3>
+              <p className="text-foreground-muted mt-2">
+                Esta empresa aún no ha publicado ofertas de empleo.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { getUser } from "@/lib/session";
 import { User, Briefcase, Settings, LogOut, FileText } from "lucide-react";
 import Link from "next/link";
 import { logoutUser, getProfile } from "@/app/actions/auth";
+import { getAllLocalities } from "@/app/actions/localities";
 import { EditProfileForm } from "@/components/job-portal/EditProfileForm";
 
 export const metadata = {
@@ -18,6 +19,7 @@ export default async function MiCuentaPage() {
   }
 
   const profile = await getProfile(user.id);
+  const localities = await getAllLocalities();
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
@@ -77,7 +79,7 @@ export default async function MiCuentaPage() {
               Mi Currículum y Perfil
             </h2>
             {profile ? (
-              <EditProfileForm initialData={profile} email={user.email} />
+              <EditProfileForm initialData={profile} email={user.email} localities={localities} />
             ) : (
               <p>Error cargando el perfil.</p>
             )}

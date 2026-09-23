@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getUser } from "@/lib/session";
+import { ProfileSchema } from "@/lib/validations";
 
 /**
  * Registra un nuevo usuario en Supabase Auth y luego
@@ -123,20 +125,43 @@ export async function logoutUser() {
 /**
  * Actualiza el perfil del usuario.
  */
-export async function updateProfile(userId: string, profileData: any) {
+export async function updateProfile(profileData: any) {
   try {
+    const user = await getUser();
+    if (!user) return { success: false, error: "No autorizado" };
+
+    const parsedData = ProfileSchema.safeParse(profileData);
+    if (!parsedData.success) {
+      return { success: false, error: "Datos inválidos" };
+    }
+
+    // Procesar skills (de string separado por comas a array de strings)
+    let skillsArray: string[] | null = null;
+    if (parsedData.data.skills) {
+      skillsArray = parsedData.data.skills
+        .split(",")
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+    }
+
     const supabase = await createClient();
     const { error } = await supabase
       .from("profiles")
       .update({
-        full_name: profileData.full_name,
-        phone: profileData.phone,
-        bio: profileData.bio,
-        title: profileData.title,
-        resume_url: profileData.resume_url,
-        is_public: profileData.is_public
+        full_name: parsedData.data.full_name,
+        phone: parsedData.data.phone,
+        bio: parsedData.data.bio,
+        title: parsedData.data.title,
+        resume_url: profileData.resume_url, // URL no viene del schema directamente
+        is_public: parsedData.data.is_public,
+        avatar_url: parsedData.data.avatar_url,
+        linkedin_url: parsedData.data.linkedin_url,
+        availability: parsedData.data.availability,
+        mobility: parsedData.data.mobility,
+        locality_id: parsedData.data.locality_id || null, // Guardar null si está vacío
+        skills: skillsArray,
       })
-      .eq("id", userId);
+      .eq("id", user.id);
 
     if (error) {
       console.error("Error actualizando perfil:", error);
@@ -173,15 +198,63 @@ export async function getProfile(userId: string) {
 }
 
 /**
+ * Obtiene el perfil público del usuario mediante su username.
+ */
+export async function getProfileByUsername(username: string) {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*, localities(ciudad)")
+      .eq("username", username)
+      .single();
+
+    if (error) {
+      console.error("Error obteniendo perfil por username:", error);
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error("Error inesperado en getProfileByUsername:", error);
+    return null;
+  }
+}
+
+/**
+ * Obtiene todos los perfiles públicos.
+ */
+export async function getAllPublicProfiles() {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*, localities(ciudad)")
+      .eq("is_public", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error obteniendo perfiles públicos:", error);
+      return [];
+    }
+    return data || [];
+  } catch (error) {
+    console.error("Error inesperado en getAllPublicProfiles:", error);
+    return [];
+  }
+}
+
+/**
  * Sube el archivo PDF del currículum al bucket de Supabase.
  */
 export async function uploadResume(formData: FormData) {
   try {
+    const user = await getUser();
+    if (!user) return { success: false, error: "No autorizado" };
+
     const supabase = await createClient();
     const file = formData.get("file") as File;
-    const userId = formData.get("userId") as string;
 
-    if (!file || !userId) {
+    if (!file) {
       return { success: false, error: "Faltan datos requeridos." };
     }
 
@@ -189,8 +262,12 @@ export async function uploadResume(formData: FormData) {
       return { success: false, error: "El archivo no puede pesar más de 5MB." };
     }
 
+    if (file.type !== "application/pdf") {
+      return { success: false, error: "Formato de archivo inválido. Solo PDF." };
+    }
+
     const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}-${Date.now()}.${fileExt}`;
+    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
     const filePath = `resumes/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
@@ -209,7 +286,7 @@ export async function uploadResume(formData: FormData) {
     const { error: dbError } = await supabase
       .from("profiles")
       .update({ resume_url: filePath })
-      .eq("id", userId);
+      .eq("id", user.id);
 
     if (dbError) {
       console.error("Error actualizando el perfil con el CV:", dbError);
@@ -253,8 +330,11 @@ export async function getResumeSignedUrl(filePath: string) {
 /**
  * Elimina el archivo PDF del currículum del bucket de Supabase y de la base de datos.
  */
-export async function deleteResume(filePath: string, userId: string) {
+export async function deleteResume(filePath: string) {
   try {
+    const user = await getUser();
+    if (!user) return { success: false, error: "No autorizado" };
+
     const supabase = await createClient();
 
     // Eliminar del bucket
@@ -264,14 +344,14 @@ export async function deleteResume(filePath: string, userId: string) {
 
     if (deleteError || !deleteData || deleteData.length === 0) {
       console.error("Error o rechazo de RLS eliminando el archivo del bucket:", deleteError, deleteData);
-      return { success: false, error: "Error al eliminar el archivo del servidor (¿Faltan permisos de DELETE en Supabase?)." };
+      return { success: false, error: "Error al eliminar el archivo del servidor." };
     }
 
     // Actualizar la base de datos para quitar la referencia
     const { error: dbError } = await supabase
       .from("profiles")
       .update({ resume_url: null })
-      .eq("id", userId);
+      .eq("id", user.id);
 
     if (dbError) {
       console.error("Error actualizando perfil tras borrar CV:", dbError);

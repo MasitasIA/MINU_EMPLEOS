@@ -6,8 +6,9 @@ import { Loader2, Save, FileText, UploadCloud, Eye, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { ImageUploadCropper } from "./ImageUploadCropper";
 
-export function EditProfileForm({ initialData, email }: { initialData: any, email?: string }) {
+export function EditProfileForm({ initialData, email, localities = [] }: { initialData: any, email?: string, localities?: any[] }) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     full_name: initialData?.full_name || "",
@@ -16,6 +17,12 @@ export function EditProfileForm({ initialData, email }: { initialData: any, emai
     bio: initialData?.bio || "",
     is_public: initialData?.is_public || false,
     resume_url: initialData?.resume_url || "",
+    avatar_url: initialData?.avatar_url || "",
+    linkedin_url: initialData?.linkedin_url || "",
+    availability: initialData?.availability || "",
+    mobility: initialData?.mobility || "",
+    locality_id: initialData?.locality_id || "",
+    skills: initialData?.skills ? (Array.isArray(initialData.skills) ? initialData.skills.join(", ") : initialData.skills) : "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +68,7 @@ export function EditProfileForm({ initialData, email }: { initialData: any, emai
     setSuccessMsg("");
 
     try {
-      const response = await deleteResume(formData.resume_url, initialData.id);
+      const response = await deleteResume(formData.resume_url);
       if (response.success) {
         setFormData({ ...formData, resume_url: "" });
         setSuccessMsg("Currículum eliminado correctamente.");
@@ -105,7 +112,6 @@ export function EditProfileForm({ initialData, email }: { initialData: any, emai
 
     const data = new FormData();
     data.append("file", file);
-    data.append("userId", initialData.id);
 
     try {
       const response = await uploadResume(data);
@@ -130,7 +136,7 @@ export function EditProfileForm({ initialData, email }: { initialData: any, emai
     setSuccessMsg("");
 
     try {
-      const response = await updateProfile(initialData.id, formData);
+      const response = await updateProfile(formData);
       if (response.success) {
         setSuccessMsg("Perfil actualizado correctamente.");
         router.refresh();
@@ -158,6 +164,23 @@ export function EditProfileForm({ initialData, email }: { initialData: any, emai
       )}
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        {/* Avatar */}
+        <div className="sm:col-span-2 p-6 border border-border border-dashed radius-predefined bg-surface-muted flex flex-col sm:flex-row items-center gap-6 justify-between">
+          <div className="flex-1">
+            <h3 className="font-bold text-foreground mb-1">Foto de Perfil</h3>
+            <p className="text-sm text-foreground-muted mb-4">
+              Una buena foto transmite profesionalidad y confianza a las empresas.
+            </p>
+            <ImageUploadCropper
+              currentImageUrl={formData.avatar_url}
+              onImageUploaded={(url) => setFormData({ ...formData, avatar_url: url })}
+              aspectRatio={1}
+              bucketName="PROFILES"
+              folderPath="avatars"
+            />
+          </div>
+        </div>
+
         {/* Nombre Completo */}
         <Input
           label="Nombre Completo"
@@ -202,6 +225,76 @@ export function EditProfileForm({ initialData, email }: { initialData: any, emai
             onChange={handleChange}
             placeholder="Ej: Desarrollador Frontend Semi-Senior"
           />
+        </div>
+
+        {/* Enlace de LinkedIn */}
+        <div className="sm:col-span-2">
+          <Input
+            label="Perfil de LinkedIn (opcional)"
+            id="linkedin_url"
+            name="linkedin_url"
+            value={formData.linkedin_url}
+            onChange={handleChange}
+            placeholder="https://linkedin.com/in/tu-perfil"
+          />
+        </div>
+
+        {/* Localidad */}
+        <div>
+          <label htmlFor="locality_id" className="mb-1 block text-sm font-bold text-foreground">
+            Localidad
+          </label>
+          <select
+            id="locality_id"
+            name="locality_id"
+            value={formData.locality_id}
+            onChange={handleChange as any}
+            className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2.5 text-sm text-foreground outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">Selecciona tu localidad</option>
+            {localities.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.ciudad}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Disponibilidad */}
+        <div>
+          <Input
+            label="Disponibilidad (ej. Part-time, Full-time)"
+            id="availability"
+            name="availability"
+            value={formData.availability}
+            onChange={handleChange}
+            placeholder="Ej: Full-time (Lunes a Viernes)"
+          />
+        </div>
+
+        {/* Movilidad */}
+        <div>
+          <Input
+            label="Movilidad (opcional)"
+            id="mobility"
+            name="mobility"
+            value={formData.mobility}
+            onChange={handleChange}
+            placeholder="Ej: Vehículo propio, Transporte público"
+          />
+        </div>
+
+        {/* Habilidades (Skills) */}
+        <div>
+          <Input
+            label="Habilidades (separadas por comas)"
+            id="skills"
+            name="skills"
+            value={formData.skills}
+            onChange={handleChange}
+            placeholder="Ej: React, Node.js, Ventas, Trabajo en equipo"
+          />
+          <p className="mt-1 text-xs text-foreground-muted">Ingresa tus habilidades separadas por comas.</p>
         </div>
 
         {/* Biografía */}

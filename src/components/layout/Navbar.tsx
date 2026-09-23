@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Search, Briefcase, Building, FileText } from "lucide-react";
+import { User, Search, Briefcase, Building, FileText, Users } from "lucide-react";
 import Image from "next/image";
 import { AuthModal } from "@/components/ui/AuthModal";
 import { UserSession } from "@/lib/session";
@@ -60,6 +60,16 @@ export function Navbar({ user }: { user: UserSession | null }) {
               <Briefcase className="h-5 w-5 sm:hidden" />
               <span className="hidden text-sm font-medium sm:block">
                 Empleos
+              </span>
+            </Link>
+
+            <Link
+              href="/talento"
+              className="flex items-center gap-1.5 radius-button p-2 text-foreground-muted transition-colors hover:bg-surface-muted hover:text-primary"
+            >
+              <Users className="h-5 w-5 sm:hidden" />
+              <span className="hidden text-sm font-medium sm:block">
+                Talento
               </span>
             </Link>
 

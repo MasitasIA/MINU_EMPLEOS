@@ -43,10 +43,13 @@ export async function getPopularCategories(limit: number = 5) {
       jobCount: cat.jobs && cat.jobs[0] ? cat.jobs[0].count : 0
     }));
     
-    // Ordenamos en memoria (asumiendo que no hay miles de categorías)
-    categoriesWithCount.sort((a, b) => b.jobCount - a.jobCount);
+    // Filtramos las que no tienen empleos
+    const categoriesWithJobs = categoriesWithCount.filter(cat => cat.jobCount > 0);
     
-    return categoriesWithCount.slice(0, limit);
+    // Ordenamos en memoria (asumiendo que no hay miles de categorías)
+    categoriesWithJobs.sort((a, b) => b.jobCount - a.jobCount);
+    
+    return categoriesWithJobs.slice(0, limit);
   } catch (error) {
     console.error("Error inesperado en getPopularCategories:", error);
     return [];

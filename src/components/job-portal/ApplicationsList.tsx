@@ -24,6 +24,8 @@ interface Application {
     resume_url: string | null;
     phone?: string | null;
     bio?: string | null;
+    username?: string;
+    avatar_url?: string | null;
   };
 }
 
@@ -146,12 +148,26 @@ export function ApplicationsList({
               <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between border-b border-border pb-6">
                 {/* Información del candidato */}
                 <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-surface-muted text-foreground-muted ring-1 ring-border">
-                    <User className="h-6 w-6" />
+                  <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-surface-muted text-foreground-muted ring-1 ring-border overflow-hidden">
+                    {app.profiles?.avatar_url ? (
+                      <img 
+                        src={app.profiles.avatar_url} 
+                        alt={app.profiles.full_name || "Candidato"} 
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-6 w-6" />
+                    )}
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-lg font-bold text-foreground truncate">
-                      {app.profiles?.full_name || "Candidato sin nombre"}
+                      {app.profiles?.username ? (
+                        <Link href={`/candidatos/${app.profiles.username}`} className="hover:text-primary hover:underline transition-colors" target="_blank">
+                          {app.profiles?.full_name || "Candidato sin nombre"}
+                        </Link>
+                      ) : (
+                        app.profiles?.full_name || "Candidato sin nombre"
+                      )}
                     </h3>
                     <p className="text-sm font-medium text-primary truncate">
                       {app.profiles?.title || "Sin título especificado"}

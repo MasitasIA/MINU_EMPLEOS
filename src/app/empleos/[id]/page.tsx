@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Star, MapPin, Briefcase, Building, Clock, ChevronRight, CheckCircle2 } from "lucide-react";
+import { Star, MapPin, Briefcase, Building, Clock, ChevronRight, CheckCircle2, Tag } from "lucide-react";
 import { getJobById } from "@/app/actions/jobs";
 import Image from "next/image";
 import { recordJobView } from "@/app/actions/stats";
@@ -94,6 +94,12 @@ export default async function JobPage({
                     <Clock className="h-4 w-4" />
                     {new Date(job.created_at).toLocaleDateString()}
                   </div>
+                  {job.categories?.name && (
+                    <div className="flex items-center gap-1.5 radius-predefined bg-surface-muted px-3 py-1.5 text-sm font-medium text-foreground-muted">
+                      <Tag className="h-4 w-4" />
+                      {job.categories.name}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Briefcase, MapPin, DollarSign, Building } from "lucide-react";
+import { Briefcase, MapPin, DollarSign, Building, Tag } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 interface JobCardProps {
@@ -15,6 +15,7 @@ interface JobCardProps {
   salaryMin?: number;
   salaryMax?: number;
   locality?: string;
+  category?: string;
 }
 
 export function JobCard({
@@ -29,6 +30,7 @@ export function JobCard({
   salaryMin,
   salaryMax,
   locality,
+  category,
 }: JobCardProps) {
   return (
     <div className="group relative flex flex-col radius-predefined bg-white p-5 shadow-sm ring-1 ring-border transition-all duration-300 hover:shadow-lg hover:border-primary/50">
@@ -64,6 +66,12 @@ export function JobCard({
           </Link>
           
           <div className="flex flex-wrap items-center gap-2 mt-2">
+            {category && (
+              <span className="inline-flex items-center gap-1 radius-predefined bg-surface-muted px-2 py-1 text-xs font-medium text-foreground-muted">
+                <Tag className="h-3 w-3" />
+                {category}
+              </span>
+            )}
             <span className="inline-flex items-center gap-1 radius-predefined bg-surface-muted px-2 py-1 text-xs font-medium text-foreground-muted">
               <Briefcase className="h-3 w-3" />
               {jobType}

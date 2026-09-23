@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
+import { JobCreateSchema, JobUpdateSchema } from "@/lib/validations";
 
 export async function getAllJobs() {
   try {
@@ -72,26 +73,37 @@ export async function createJob(jobData: any) {
     const user = await getUser();
     if (!user) return { success: false, error: "No autorizado" };
 
+    const parsedData = JobCreateSchema.safeParse(jobData);
+    if (!parsedData.success) {
+      return { success: false, error: "Datos de empleo inválidos" };
+    }
+
     const supabase = await createClient();
+
+    // Validar propiedad de la empresa para evitar Mass Assignment/Spoofing
+    const { data: company } = await supabase.from("companies").select("owner_id").eq("id", parsedData.data.company_id).single();
+    if (!company || company.owner_id !== user.id) {
+      return { success: false, error: "No tienes permiso para publicar en esta empresa" };
+    }
     
     // Generar slug
-    const baseSlug = jobData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const baseSlug = parsedData.data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const slug = `${baseSlug}-${Math.floor(Math.random() * 10000)}`;
 
     const { error } = await supabase.from("jobs").insert({
-      company_id: jobData.company_id,
-      category_id: jobData.category_id,
-      name: jobData.name,
+      company_id: parsedData.data.company_id,
+      category_id: parsedData.data.category_id,
+      name: parsedData.data.name,
       slug: slug,
-      description: jobData.description,
-      salary_min: jobData.salary_min,
-      salary_max: jobData.salary_max,
-      vacancies: jobData.vacancies || 1,
-      job_type: jobData.job_type || 'Full-time',
-      modality: jobData.modality || 'Presencial',
-      requirements: jobData.requirements,
-      locality_id: jobData.locality_id,
-      address: jobData.address || null,
+      description: parsedData.data.description,
+      salary_min: parsedData.data.salary_min,
+      salary_max: parsedData.data.salary_max,
+      vacancies: parsedData.data.vacancies,
+      job_type: parsedData.data.job_type,
+      modality: parsedData.data.modality,
+      requirements: parsedData.data.requirements,
+      locality_id: parsedData.data.locality_id,
+      address: parsedData.data.address || null,
     });
 
     if (error) {
@@ -113,6 +125,11 @@ export async function updateJob(id: string, jobData: any) {
     const user = await getUser();
     if (!user) return { success: false, error: "No autorizado" };
 
+    const parsedData = JobUpdateSchema.safeParse(jobData);
+    if (!parsedData.success) {
+      return { success: false, error: "Datos de empleo inválidos" };
+    }
+
     const supabase = await createClient();
 
     // Validar propiedad de la empresa (seguridad extra)
@@ -122,17 +139,17 @@ export async function updateJob(id: string, jobData: any) {
     if (!company || company.owner_id !== user.id) return { success: false, error: "No tienes permiso" };
 
     const { error } = await supabase.from("jobs").update({
-      category_id: jobData.category_id,
-      name: jobData.name,
-      description: jobData.description,
-      salary_min: jobData.salary_min,
-      salary_max: jobData.salary_max,
-      vacancies: jobData.vacancies || 1,
-      job_type: jobData.job_type || 'Full-time',
-      modality: jobData.modality || 'Presencial',
-      requirements: jobData.requirements,
-      locality_id: jobData.locality_id,
-      address: jobData.address || null,
+      category_id: parsedData.data.category_id,
+      name: parsedData.data.name,
+      description: parsedData.data.description,
+      salary_min: parsedData.data.salary_min,
+      salary_max: parsedData.data.salary_max,
+      vacancies: parsedData.data.vacancies,
+      job_type: parsedData.data.job_type,
+      modality: parsedData.data.modality,
+      requirements: parsedData.data.requirements,
+      locality_id: parsedData.data.locality_id,
+      address: parsedData.data.address || null,
     }).eq("id", id);
 
     if (error) {
@@ -155,6 +172,13 @@ export async function toggleJobStatus(id: string, currentStatus: boolean) {
     if (!user) return { success: false, error: "No autorizado" };
 
     const supabase = await createClient();
+
+    // Validar propiedad de la empresa
+    const { data: job } = await supabase.from("jobs").select("company_id").eq("id", id).single();
+    if (!job) return { success: false, error: "Empleo no encontrado" };
+    const { data: company } = await supabase.from("companies").select("owner_id").eq("id", job.company_id).single();
+    if (!company || company.owner_id !== user.id) return { success: false, error: "No tienes permiso" };
+
     const { error } = await supabase
       .from("jobs")
       .update({ is_active: !currentStatus })
@@ -177,6 +201,12 @@ export async function deleteJob(id: string) {
 
     const supabase = await createClient();
     
+    // Validar propiedad de la empresa
+    const { data: job } = await supabase.from("jobs").select("company_id").eq("id", id).single();
+    if (!job) return { success: false, error: "Empleo no encontrado" };
+    const { data: company } = await supabase.from("companies").select("owner_id").eq("id", job.company_id).single();
+    if (!company || company.owner_id !== user.id) return { success: false, error: "No tienes permiso" };
+
     // Primero borrar las postulaciones relacionadas
     await supabase.from("applications").delete().eq("job_id", id);
     

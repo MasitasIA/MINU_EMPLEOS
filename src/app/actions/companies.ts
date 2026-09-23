@@ -4,6 +4,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
+import { CompanyCreateSchema, CompanyUpdateSchema } from "@/lib/validations";
 
 // Función auxiliar para generar el slug (ID de la empresa) a partir del nombre
 function generateSlug(name: string): string {
@@ -43,18 +44,7 @@ export async function getCompanyByOwner(userId: string) {
 /**
  * Crea una nueva empresa para el usuario actual.
  */
-export async function createCompany(companyData: {
-  name: string;
-  description: string;
-  detailed_description?: string;
-  locality_id: string;
-  address?: string;
-  phone?: string;
-  website?: string;
-  size?: string;
-  linkedin_url?: string;
-  social_urls?: any;
-}) {
+export async function createCompany(companyData: any) {
   try {
     const user = await getUser();
     if (!user) {
@@ -62,6 +52,11 @@ export async function createCompany(companyData: {
         success: false,
         error: "Debes iniciar sesión para crear una empresa.",
       };
+    }
+
+    const parsedData = CompanyCreateSchema.safeParse(companyData);
+    if (!parsedData.success) {
+      return { success: false, error: "Datos de empresa inválidos." };
     }
 
     const supabase = await createClient();
@@ -72,7 +67,7 @@ export async function createCompany(companyData: {
       return { success: false, error: "Ya tienes una empresa registrada." };
     }
 
-    let slug = generateSlug(companyData.name);
+    let slug = generateSlug(parsedData.data.name);
 
     // Verificamos si el slug ya existe (búsqueda de colisiones)
     const { data: slugExists } = await supabase
@@ -88,17 +83,17 @@ export async function createCompany(companyData: {
 
     const { error: insertError } = await supabase.from("companies").insert({
       id: slug,
-      name: companyData.name,
+      name: parsedData.data.name,
       owner_id: user.id,
-      description: companyData.description,
-      detailed_description: companyData.detailed_description || null,
-      locality_id: companyData.locality_id,
-      address: companyData.address || null,
-      phone: companyData.phone || null,
-      website: companyData.website || null,
-      size: companyData.size || null,
-      linkedin_url: companyData.linkedin_url || null,
-      social_urls: companyData.social_urls || {},
+      description: parsedData.data.description,
+      detailed_description: parsedData.data.detailed_description || null,
+      locality_id: parsedData.data.locality_id,
+      address: parsedData.data.address || null,
+      phone: parsedData.data.phone || null,
+      website: parsedData.data.website || null,
+      size: parsedData.data.size || null,
+      linkedin_url: parsedData.data.linkedin_url || null,
+      social_urls: parsedData.data.social_urls || {},
     });
 
     if (insertError) {
@@ -169,27 +164,16 @@ export async function getCompanyById(slug: string) {
 /**
  * Actualiza los datos de la empresa, incluyendo la posibilidad de cambiar el ID (slug).
  */
-export async function updateCompany(oldSlug: string, companyData: {
-  id: string; // Nuevo slug
-  name: string;
-  description: string;
-  detailed_description?: string;
-  category_id?: string;
-  locality_id?: string;
-  image_url?: string;
-  cover_url?: string;
-  address?: string;
-  phone?: string;
-  website?: string;
-  size?: string;
-  linkedin_url?: string;
-  social_urls?: any;
-  is_active?: boolean;
-}) {
+export async function updateCompany(oldSlug: string, companyData: any) {
   try {
     const user = await getUser();
     if (!user) {
       return { success: false, error: "No autorizado." };
+    }
+
+    const parsedData = CompanyUpdateSchema.safeParse(companyData);
+    if (!parsedData.success) {
+      return { success: false, error: "Datos de empresa inválidos." };
     }
 
     const supabase = await createClient();
@@ -206,11 +190,11 @@ export async function updateCompany(oldSlug: string, companyData: {
     }
 
     // Si est cambiando el slug, verificar que el nuevo no exista
-    if (oldSlug !== companyData.id) {
+    if (oldSlug !== parsedData.data.id) {
       const { data: slugExists } = await supabase
         .from("companies")
         .select("id")
-        .eq("id", companyData.id)
+        .eq("id", parsedData.data.id)
         .maybeSingle();
 
       if (slugExists) {
@@ -221,21 +205,21 @@ export async function updateCompany(oldSlug: string, companyData: {
     const { error: updateError } = await supabase
       .from("companies")
       .update({
-        id: companyData.id,
-        name: companyData.name,
-        description: companyData.description,
-        detailed_description: companyData.detailed_description || null,
-        category_id: companyData.category_id || null,
-        locality_id: companyData.locality_id || null,
-        image_url: companyData.image_url || null,
-        cover_url: companyData.cover_url || null,
-        address: companyData.address || null,
-        phone: companyData.phone || null,
-        website: companyData.website || null,
-        size: companyData.size || null,
-        linkedin_url: companyData.linkedin_url || null,
-        social_urls: companyData.social_urls || {},
-        is_active: companyData.is_active !== undefined ? companyData.is_active : true,
+        id: parsedData.data.id,
+        name: parsedData.data.name,
+        description: parsedData.data.description,
+        detailed_description: parsedData.data.detailed_description || null,
+        category_id: parsedData.data.category_id || null,
+        locality_id: parsedData.data.locality_id || null,
+        image_url: parsedData.data.image_url || null,
+        cover_url: parsedData.data.cover_url || null,
+        address: parsedData.data.address || null,
+        phone: parsedData.data.phone || null,
+        website: parsedData.data.website || null,
+        size: parsedData.data.size || null,
+        linkedin_url: parsedData.data.linkedin_url || null,
+        social_urls: parsedData.data.social_urls || {},
+        is_active: parsedData.data.is_active !== undefined ? parsedData.data.is_active : true,
       })
       .eq("id", oldSlug);
 

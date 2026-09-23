@@ -122,7 +122,7 @@ export async function getApplicationsForJob(jobId: string) {
 
     const { data, error } = await supabase
       .from("applications")
-      .select("*, profiles(full_name, title, resume_url, phone, bio)")
+      .select("*, profiles(full_name, title, resume_url, phone, bio, username, avatar_url)")
       .eq("job_id", jobId)
       .order("created_at", { ascending: false });
 
@@ -168,7 +168,7 @@ export async function getApplicationsForCompany(companyId: string) {
 
     const { data, error } = await supabase
       .from("applications")
-      .select("*, profiles(full_name, title, resume_url, phone, bio), jobs(name, slug)")
+      .select("*, profiles(full_name, title, resume_url, phone, bio, username, avatar_url), jobs(name, slug)")
       .in("job_id", jobIds)
       .order("created_at", { ascending: false });
 
@@ -191,7 +191,16 @@ export async function updateApplicationStatus(applicationId: string, status: 'pe
     
         const supabase = await createClient();
         
-        // Asumimos validación de propiedad de empresa en la UI o aquí
+        // Verificar que la empresa que publicó el empleo pertenece al usuario actual
+        const { data: application } = await supabase.from("applications").select("job_id").eq("id", applicationId).single();
+        if (!application) return { success: false };
+        
+        const { data: job } = await supabase.from("jobs").select("company_id").eq("id", application.job_id).single();
+        if (!job) return { success: false };
+        
+        const { data: company } = await supabase.from("companies").select("owner_id").eq("id", job.company_id).single();
+        if (!company || company.owner_id !== user.id) return { success: false };
+        
         const { error } = await supabase
           .from("applications")
           .update({ status, updated_at: new Date().toISOString() })
