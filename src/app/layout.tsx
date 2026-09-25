@@ -6,7 +6,9 @@ import "./globals.css";
 // Componentes
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { AnnouncementBanner } from "@/components/layout/AnnouncementBanner";
 import { getUser } from "@/lib/session";
+import { getSiteSettings } from "@/app/actions/settings";
 
 // Tipografías
 const geistSans = Geist({
@@ -33,6 +35,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getUser();
+  const settings = await getSiteSettings();
 
   return (
     <html
@@ -40,9 +43,16 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        {settings?.announcement_active && settings?.announcement_text && (
+          <AnnouncementBanner 
+            text={settings.announcement_text} 
+            url={settings.announcement_url}
+            updatedAt={settings.updated_at}
+          />
+        )}
         <Navbar user={user} />
         <main className="flex-1">{children}</main>
-        <Footer />
+        <Footer user={user} />
       </body>
     </html>
   );

@@ -4,6 +4,14 @@ import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 import { JobCreateSchema, JobUpdateSchema } from "@/lib/validations";
+import sanitizeHtml from "sanitize-html";
+
+const sanitizeOptions = {
+  allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li'],
+  allowedAttributes: {
+    'a': ['href', 'target', 'rel']
+  }
+};
 
 export async function getAllJobs() {
   try {
@@ -90,18 +98,21 @@ export async function createJob(jobData: any) {
     const baseSlug = parsedData.data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const slug = `${baseSlug}-${Math.floor(Math.random() * 10000)}`;
 
+    const sanitizedDescription = sanitizeHtml(parsedData.data.description, sanitizeOptions);
+    const sanitizedRequirements = parsedData.data.requirements ? sanitizeHtml(parsedData.data.requirements, sanitizeOptions) : null;
+
     const { error } = await supabase.from("jobs").insert({
       company_id: parsedData.data.company_id,
       category_id: parsedData.data.category_id,
       name: parsedData.data.name,
       slug: slug,
-      description: parsedData.data.description,
+      description: sanitizedDescription,
       salary_min: parsedData.data.salary_min,
       salary_max: parsedData.data.salary_max,
       vacancies: parsedData.data.vacancies,
       job_type: parsedData.data.job_type,
       modality: parsedData.data.modality,
-      requirements: parsedData.data.requirements,
+      requirements: sanitizedRequirements,
       locality_id: parsedData.data.locality_id,
       address: parsedData.data.address || null,
     });
@@ -138,16 +149,19 @@ export async function updateJob(id: string, jobData: any) {
     const { data: company } = await supabase.from("companies").select("owner_id").eq("id", job.company_id).single();
     if (!company || company.owner_id !== user.id) return { success: false, error: "No tienes permiso" };
 
+    const sanitizedDescription = sanitizeHtml(parsedData.data.description, sanitizeOptions);
+    const sanitizedRequirements = parsedData.data.requirements ? sanitizeHtml(parsedData.data.requirements, sanitizeOptions) : null;
+
     const { error } = await supabase.from("jobs").update({
       category_id: parsedData.data.category_id,
       name: parsedData.data.name,
-      description: parsedData.data.description,
+      description: sanitizedDescription,
       salary_min: parsedData.data.salary_min,
       salary_max: parsedData.data.salary_max,
       vacancies: parsedData.data.vacancies,
       job_type: parsedData.data.job_type,
       modality: parsedData.data.modality,
-      requirements: parsedData.data.requirements,
+      requirements: sanitizedRequirements,
       locality_id: parsedData.data.locality_id,
       address: parsedData.data.address || null,
     }).eq("id", id);

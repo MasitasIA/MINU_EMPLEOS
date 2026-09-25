@@ -1,12 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { JobCard } from "./JobCard";
-import { Search, MapPin, Briefcase, FilterX } from "lucide-react";
+import { Search, FilterX } from "lucide-react";
+
+interface Job {
+  id: string;
+  slug: string;
+  company_id: string;
+  name: string;
+  job_type: string;
+  modality: string;
+  salary_min: number | null;
+  salary_max: number | null;
+  category_id?: string;
+  locality_id?: string;
+  companies?: { name: string; image_url?: string };
+  categories?: { name: string };
+  localities?: { ciudad: string };
+}
 
 interface JobSearchCatalogProps {
-  initialJobs: any[];
+  initialJobs: Job[];
   categories: { id: string; name: string }[];
   localities: { id: string; ciudad: string }[];
 }
@@ -18,7 +34,6 @@ export function JobSearchCatalog({
 }: JobSearchCatalogProps) {
   const searchParams = useSearchParams();
 
-  const [jobs, setJobs] = useState(initialJobs);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
   const [jobTypeFilter, setJobTypeFilter] = useState(
     searchParams.get("job_type") || "",
@@ -33,30 +48,17 @@ export function JobSearchCatalog({
     searchParams.get("locality") || "",
   );
 
-  useEffect(() => {
-    const q = searchParams.get("q") || "";
-    const type = searchParams.get("job_type") || "";
-    const mod = searchParams.get("modality") || "";
-    const cat = searchParams.get("category") || "";
-    const loc = searchParams.get("locality") || "";
+  const [appliedFilters, setAppliedFilters] = useState({
+    q: searchParams.get("q") || "",
+    type: searchParams.get("job_type") || "",
+    mod: searchParams.get("modality") || "",
+    cat: searchParams.get("category") || "",
+    loc: searchParams.get("locality") || "",
+  });
 
-    setSearchTerm(q);
-    setJobTypeFilter(type);
-    setModalityFilter(mod);
-    setCategoryFilter(cat);
-    setLocalityFilter(loc);
-
-    applyFilters(q, type, mod, cat, loc);
-  }, [searchParams, initialJobs]);
-
-  const applyFilters = (
-    q: string,
-    type: string,
-    mod: string,
-    cat: string,
-    loc: string,
-  ) => {
+  const jobs = React.useMemo(() => {
     let filtered = [...initialJobs];
+    const { q, type, mod, cat, loc } = appliedFilters;
 
     if (q) {
       filtered = filtered.filter(
@@ -82,17 +84,17 @@ export function JobSearchCatalog({
       filtered = filtered.filter((j) => j.locality_id === loc);
     }
 
-    setJobs(filtered);
-  };
+    return filtered;
+  }, [initialJobs, appliedFilters]);
 
   const handleSearch = () => {
-    applyFilters(
-      searchTerm,
-      jobTypeFilter,
-      modalityFilter,
-      categoryFilter,
-      localityFilter,
-    );
+    setAppliedFilters({
+      q: searchTerm,
+      type: jobTypeFilter,
+      mod: modalityFilter,
+      cat: categoryFilter,
+      loc: localityFilter,
+    });
   };
 
   const clearFilters = () => {
@@ -101,7 +103,7 @@ export function JobSearchCatalog({
     setModalityFilter("");
     setCategoryFilter("");
     setLocalityFilter("");
-    setJobs(initialJobs);
+    setAppliedFilters({ q: "", type: "", mod: "", cat: "", loc: "" });
   };
 
   return (
@@ -233,7 +235,7 @@ export function JobSearchCatalog({
           </div>
 
           {jobs.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
               {jobs.map((job) => (
                 <JobCard
                   key={job.id}

@@ -28,7 +28,7 @@ export function CompanyCard({
       className="group relative flex flex-col overflow-hidden radius-predefined bg-white shadow-sm ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/20"
     >
       {/* Portada */}
-      <div className="relative h-24 w-full bg-gradient-to-br from-primary/20 via-surface-muted to-primary/10 radius-t-predefined overflow-hidden">
+      <div className="relative h-20 sm:h-24 w-full bg-gradient-to-br from-primary/20 via-surface-muted to-primary/10 radius-t-predefined overflow-hidden">
         {cover_url && (
           <Image
             src={cover_url}
@@ -42,15 +42,15 @@ export function CompanyCard({
 
         {/* Etiqueta de categoría (Rubro) */}
         {categories && (
-          <div className="absolute top-3 right-3 radius-predefined bg-white/90 px-3 py-1 text-xs font-bold text-primary shadow-sm backdrop-blur-md">
+          <div className="absolute top-2 right-2 sm:top-3 sm:right-3 radius-predefined bg-white/90 px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-primary shadow-sm backdrop-blur-md max-w-[80%] truncate">
             {categories.name}
           </div>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col px-5 pb-5">
+      <div className="flex flex-1 flex-col px-3 pb-3 sm:px-5 sm:pb-5">
         {/* Logo de la empresa */}
-        <div className="relative -mt-10 mb-3 flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-white shadow-sm transition-transform duration-500 group-hover:scale-105">
+        <div className="relative -mt-8 sm:-mt-10 mb-2 sm:mb-3 flex h-16 w-16 sm:h-20 sm:w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-white shadow-sm transition-transform duration-500 group-hover:scale-105">
           {image_url ? (
             <Image
               src={image_url}
@@ -65,7 +65,7 @@ export function CompanyCard({
         </div>
 
         <div className="mb-1 flex items-center justify-between">
-          <h3 className="flex items-center gap-1.5 text-lg font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+          <h3 className="flex items-center gap-1.5 text-base sm:text-lg font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
             {name}
             {is_verified && (
               <BadgeCheck className="h-4 w-4 text-primary fill-primary/10" />
@@ -73,13 +73,13 @@ export function CompanyCard({
           </h3>
         </div>
 
-        <p className="mb-4 mt-2 line-clamp-2 text-sm text-foreground-muted flex-1">
+        <p className="mb-3 mt-1 sm:mt-2 line-clamp-2 text-xs sm:text-sm text-foreground-muted flex-1">
           {description}
         </p>
 
-        <div className="flex items-center justify-between border-t border-border pt-4">
-          <span className="flex items-center text-sm font-bold text-primary transition-colors">
-            Ver Perfil y Empleos
+        <div className="flex items-center justify-between border-t border-border pt-3 sm:pt-4">
+          <span className="flex items-center text-[11px] sm:text-sm font-bold text-primary transition-colors">
+            Ver Perfil
           </span>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { updateCompany, deleteCompany } from "@/app/actions/companies";
 import { Save, AlertTriangle, ShieldCheck, Trash2, X } from "lucide-react";
 import { ImageUploadCropper } from "./ImageUploadCropper";
@@ -388,13 +389,12 @@ export function CompanySettingsForm({
           </p>
         </div>
         {!company.is_verified && (
-          <button 
-            type="button"
-            onClick={() => alert("Tu solicitud ha sido enviada al equipo de administración. Recibirás un correo cuando sea revisada.")}
-            className="radius-button bg-secondary/10 text-secondary hover:bg-secondary/20 px-6 py-2.5 text-sm font-bold transition-colors whitespace-nowrap"
+          <Link 
+            href="/panel-empresa/verificacion"
+            className="inline-block radius-button bg-secondary/10 text-secondary hover:bg-secondary/20 px-6 py-2.5 text-sm font-bold transition-colors whitespace-nowrap"
           >
             Solicitar Verificación
-          </button>
+          </Link>
         )}
       </div>
 

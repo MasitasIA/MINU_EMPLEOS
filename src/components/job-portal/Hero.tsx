@@ -1,5 +1,8 @@
 import { Tag } from "lucide-react";
-import { getPopularCategories, getAllCategories } from "@/app/actions/categories";
+import {
+  getPopularCategories,
+  getAllCategories,
+} from "@/app/actions/categories";
 import { getAllLocalities } from "@/app/actions/localities";
 import { HeroSearch } from "./HeroSearch";
 import Link from "next/link";
@@ -13,7 +16,7 @@ export async function Hero() {
     <section className="relative overflow-hidden bg-background py-20 lg:py-32">
       {/* Fondo SVG */}
       <div
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-20"
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-16"
         style={{ backgroundImage: "url('/HeroBackground.svg')" }}
       />
 
@@ -22,15 +25,13 @@ export async function Hero() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            Encuentra tu próximo{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-              gran empleo
+            Impulsando el trabajo en el{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
+              interior bonaerense
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-foreground-muted">
-            Destacamos la disponibilidad de empleos locales en pequeños
-            negocios. Conecta con las mejores empresas de Guaminí y alrededores
-            y descubre oportunidades laborales únicas.
+            Conectamos el talento local con las mejores pymes, empresas agropecuarias y comercios de la Provincia de Buenos Aires. Encuentra oportunidades laborales únicas sin irte de tu ciudad.
           </p>
         </div>
 
@@ -47,7 +48,11 @@ export async function Hero() {
                 href={`/empleos?category=${cat.id}`}
                 className="radius-button bg-white px-4 py-1.5 text-foreground-muted shadow-sm ring-1 ring-border transition-all hover:text-primary hover:ring-primary/30 flex items-center gap-2"
               >
-                {cat.icon ? <span>{cat.icon}</span> : <Tag className="h-4 w-4" />}{" "}
+                {cat.icon ? (
+                  <span>{cat.icon}</span>
+                ) : (
+                  <Tag className="h-4 w-4" />
+                )}{" "}
                 {cat.name}
               </Link>
             ))}

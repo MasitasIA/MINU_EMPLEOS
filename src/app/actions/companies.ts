@@ -186,7 +186,10 @@ export async function updateCompany(oldSlug: string, companyData: any) {
       .maybeSingle();
 
     if (!currentCompany || currentCompany.owner_id !== user.id) {
-      return { success: false, error: "No tienes permiso para editar esta empresa." };
+      return {
+        success: false,
+        error: "No tienes permiso para editar esta empresa.",
+      };
     }
 
     // Si est cambiando el slug, verificar que el nuevo no exista
@@ -198,7 +201,10 @@ export async function updateCompany(oldSlug: string, companyData: any) {
         .maybeSingle();
 
       if (slugExists) {
-        return { success: false, error: "Ese identificador (URL) ya está en uso por otra empresa." };
+        return {
+          success: false,
+          error: "Ese identificador (URL) ya está en uso por otra empresa.",
+        };
       }
     }
 
@@ -219,7 +225,10 @@ export async function updateCompany(oldSlug: string, companyData: any) {
         size: parsedData.data.size || null,
         linkedin_url: parsedData.data.linkedin_url || null,
         social_urls: parsedData.data.social_urls || {},
-        is_active: parsedData.data.is_active !== undefined ? parsedData.data.is_active : true,
+        is_active:
+          parsedData.data.is_active !== undefined
+            ? parsedData.data.is_active
+            : true,
       })
       .eq("id", oldSlug);
 
@@ -257,13 +266,13 @@ export async function deleteCompany(slug: string) {
       .maybeSingle();
 
     if (!currentCompany || currentCompany.owner_id !== user.id) {
-      return { success: false, error: "No tienes permiso para eliminar esta empresa." };
+      return {
+        success: false,
+        error: "No tienes permiso para eliminar esta empresa.",
+      };
     }
 
-    const { error } = await supabase
-      .from("companies")
-      .delete()
-      .eq("id", slug);
+    const { error } = await supabase.from("companies").delete().eq("id", slug);
 
     if (error) {
       console.error("Error eliminando empresa:", error);
@@ -274,6 +283,88 @@ export async function deleteCompany(slug: string) {
     return { success: true };
   } catch (error) {
     console.error("Error inesperado en deleteCompany:", error);
+    return { success: false, error: "Error interno del servidor." };
+  }
+}
+
+/**
+ * Solicita la verificación de una empresa.
+ * Sube el documento probatorio y registra la solicitud en company_verifications.
+ */
+export async function requestCompanyVerification(formData: FormData) {
+  try {
+    const user = await getUser();
+    if (!user) return { success: false, error: "No autorizado." };
+
+    const companyId = formData.get("companyId") as string;
+    const taxId = formData.get("taxId") as string;
+    const legalName = formData.get("legalName") as string;
+    const comments = formData.get("comments") as string;
+    const file = formData.get("document") as File;
+
+    if (!companyId || !taxId || !legalName || !file) {
+      return { success: false, error: "Faltan campos requeridos." };
+    }
+
+    const supabase = await createClient();
+
+    // 1. Validar que la empresa sea del usuario
+    const { data: company } = await supabase
+      .from("companies")
+      .select("owner_id")
+      .eq("id", companyId)
+      .maybeSingle();
+
+    if (!company || company.owner_id !== user.id) {
+      return {
+        success: false,
+        error: "No tienes permisos sobre esta empresa.",
+      };
+    }
+
+    // 2. Subir documento (Asegurarse que el bucket COMPANY_VERIFICATIONS exista y sea privado)
+    // Para simplificar, si no hay bucket, asumo que usaremos otro, o asumiremos que ya lo creará el dev
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${companyId}-${Date.now()}.${fileExt}`;
+    const filePath = `verifications/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("COMPANY_VERIFICATIONS")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      console.error("Error subiendo documento:", uploadError);
+      return {
+        success: false,
+        error: "Error al subir el documento. Revisa si el bucket existe.",
+      };
+    }
+
+    // 3. Insertar registro en company_verifications
+    const { error: insertError } = await supabase
+      .from("company_verifications")
+      .insert({
+        company_id: companyId,
+        tax_id: taxId,
+        legal_name: legalName,
+        document_url: filePath,
+        comments: comments || null,
+        status: "pending",
+      });
+
+    if (insertError) {
+      console.error("Error insertando verificacion:", insertError);
+      return { success: false, error: "Error al registrar la solicitud." };
+    }
+
+    // Simular el envío de un correo electrónico
+    console.log(
+      `[SIMULACIÓN DE EMAIL] Enviando correo a soporte@minuempleos.com: Nueva verificación pendiente para ${legalName} (CUIT: ${taxId})`,
+    );
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error inesperado en requestCompanyVerification:", error);
     return { success: false, error: "Error interno del servidor." };
   }
 }

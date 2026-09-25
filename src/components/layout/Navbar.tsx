@@ -75,10 +75,10 @@ export function Navbar({ user }: { user: UserSession | null }) {
 
             <Link
               href="/panel-empresa"
-              className="flex items-center gap-1.5 radius-button p-2 text-foreground-muted transition-colors hover:bg-surface-muted hover:text-primary"
+              className="flex items-center gap-1.5 radius-button p-2 text-accent transition-colors hover:bg-accent/10"
             >
               <Building className="h-5 w-5 sm:hidden" />
-              <span className="hidden text-sm font-medium sm:block">
+              <span className="hidden text-sm font-bold sm:block">
                 Para Empresas
               </span>
             </Link>
@@ -100,10 +100,25 @@ export function Navbar({ user }: { user: UserSession | null }) {
             {user ? (
               <Link
                 href="/mi-cuenta"
-                className="flex items-center gap-1.5 radius-button p-2 text-primary font-bold transition-colors hover:bg-primary/10"
+                className="flex items-center gap-2 radius-button p-1 sm:p-2 text-primary font-bold transition-colors hover:bg-primary/10"
               >
-                <User className="h-5 w-5" />
-                <span className="hidden text-sm sm:block">Mi Cuenta</span>
+                {user.avatar_url ? (
+                  <div className="relative h-8 w-8 overflow-hidden rounded-full border border-primary/20">
+                    {/* Usamos img estándar para evitar problemas de next/image con dominios externos no configurados */}
+                    <img
+                      src={user.avatar_url}
+                      alt={user.username}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20 text-sm font-bold uppercase">
+                    {user.username.charAt(0)}
+                  </div>
+                )}
+                <span className="hidden text-sm sm:block truncate max-w-[100px]">
+                  {user.username}
+                </span>
               </Link>
             ) : (
               <button

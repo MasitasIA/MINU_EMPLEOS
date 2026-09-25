@@ -1,47 +1,113 @@
-# TODO: Portal de Empleos Local (Minú Empleos)
+# Auditoría Minú Empleos - TODO.txt
 
-## 1. Configuración Inicial y Migración (✓ COMPLETADO)
-[x] Instalar Next.js con App Router, Tailwind CSS, y TypeScript.
-[x] Migrar toda la base de datos y esquema de "Marketplace" a "Portal de Empleos" (Companies, Jobs, Applications).
-[x] Rebranding completo a "Minú Empleos" (Navbar, Footer, Hero, Meta tags).
-[x] Integración de base de datos Supabase (Server Actions para companies, jobs, applications, categories, localities).
+[x] [ALTO] Efecto secundario y estado derivado mal implementado
+Categoría: React / Next.js
+Archivo: src/components/job-portal/JobSearchCatalog.tsx
+Línea: 43-50
+Problema: Se llama a `setState` síncronamente dentro de `useEffect` (cascading renders) y se accede a `applyFilters` antes de ser declarada (fuera del scope del efecto, causando dependencias faltantes).
+Impacto: Problemas de performance evidentes (re-renders en cascada) y comportamiento impredecible de filtros al cambiar la URL.
+Solución sugerida: Eliminar el useEffect y utilizar el estado inicial directamente desde searchParams o reescribir la lógica de filtros para que no derive el estado innecesariamente. Envolver `applyFilters` en `useCallback` si es estrictamente necesario el efecto.
 
-## 2. UI y Componentes (En Progreso)
-[x] Layout principal con buscador integrado en el Navbar.
-[x] Tarjetas de Empleo (`JobCard.tsx`) y Tarjetas de Empresa (`CompanyCard.tsx`).
-[x] Botón de postulación interactivo (`ApplyJobButton.tsx`).
-[x] Formularios de creación: `CreateJobForm.tsx` y `CompanySettingsForm.tsx`.
-[x] Crear componentes UI genéricos reutilizables (Button, Input, Modal) para estandarizar el diseño y reducir clases de Tailwind repetidas.
-[x] Añadir estados de carga (`loading.tsx` o skeletons) en las vistas que hacen fetch a Supabase.
+[ ] [ALTO] Falta revisión manual de dependencias
+Categoría: Configuración
+Archivo: package.json
+Línea: N/A
+Problema: Existen dependencias instaladas, pero hay que comprobar si no faltan estados de empty y disabled en todo el sitio.
+Impacto: Bugs potenciales en formularios.
+Solución sugerida: Auditar cada formulario.
 
-## 3. Rutas de Candidatos (En Progreso)
-[x] `app/page.tsx` (Home): Hero con buscador y categorías.
-[x] `app/empleos/[slug]/page.tsx`: Detalle de la oferta de empleo y botón de postularse.
-[x] `app/empresas/[id]/page.tsx`: Perfil público de la empresa y lista de vacantes.
-[x] `app/mis-postulaciones/page.tsx`: Seguimiento de estado de postulaciones enviadas.
-[x] `app/iniciar/page.tsx` y `app/registro/page.tsx`: Autenticación y creación de perfiles de usuario.
-[x] `app/mi-cuenta/page.tsx`: Formulario para que el usuario gestione su perfil y suba su currículum (CV) al bucket `RESUMES` de Supabase.
-[ ] `app/mi-cuenta/eliminar-cuenta/page.tsx`: Crear el formulario y lógica para eliminar la cuenta permanentemente (actualmente el botón de perfil redirige aquí).
-[ ] `app/empleos/page.tsx`: Mejorar el catálogo de búsqueda integrando filtros interactivos (por modalidad, jornada, categoría y localidad) en un componente `JobSearchCatalog.tsx`.
-[ ] `app/recuperar-password/page.tsx`: Flujo de "Olvidé mi contraseña".
+[x] [ALTO] Ruta inexistente: Recuperar Contraseña
+Categoría: Navegación / Autenticación
+Archivo: src/app/iniciar/page.tsx / src/app/recuperar/page.tsx
+Línea: N/A
+Problema: El enlace de "Olvidé mi contraseña" apunta a `/recuperar` pero la ruta y el flujo de recuperación no existen.
+Impacto: Los usuarios no pueden recuperar el acceso a sus cuentas.
+Solución sugerida: Crear la ruta `app/recuperar-password/page.tsx` y el flujo asociado.
 
-## 4. Rutas de Empresas / Reclutadores (En Progreso)
-[x] `app/panel-empresa/page.tsx`: Dashboard de la empresa.
-[x] `app/panel-empresa/ajustes/page.tsx`: Edición del perfil de la empresa (logo, portada, descripción).
-[x] `app/panel-empresa/empleos/nuevo/page.tsx`: Formulario de publicación de nuevas ofertas laborales.
-[ ] `app/panel-empresa/postulaciones/page.tsx`: Panel para que la empresa pueda ver a los candidatos que aplicaron a sus ofertas.
-[ ] Añadir funcionalidad para que la empresa pueda cambiar el estado de la postulación (`pending` -> `reviewed` -> `accepted` / `rejected`).
-[ ] `app/panel-empresa/empleos/page.tsx`: Listado de los empleos activos e inactivos de la empresa con opción a pausarlos, editarlos o eliminarlos.
+[x] [ALTO] Ruta inexistente: Eliminar Cuenta
+Categoría: Navegación / UX
+Archivo: src/app/mi-cuenta/eliminar-cuenta/page.tsx
+Línea: N/A
+Problema: El botón de eliminar perfil redirige a una ruta que aún no ha sido implementada.
+Impacto: Promesa de funcionalidad rota y mala experiencia de usuario.
+Solución sugerida: Crear el formulario y la lógica para eliminar la cuenta permanentemente en la ruta correspondiente.
 
-## 5. Integración Lógica y Estado
-[x] Auth System con Supabase y manejo de sesiones.
-[x] Lógica de vistas y analíticas básicas (`jobs-stats.json`).
-[ ] Integración del sistema de Storage para imágenes (logos y portadas) de empresas en el bucket `PROFILES`. (Los CVs ya están listos en `RESUMES`).
+[x] [ALTO] Falta sanitización en descripciones de empleos
+Categoría: Seguridad / Contenido
+Archivo: src/components/job-portal/CreateJobForm.tsx
+Línea: N/A
+Problema: Las descripciones largas de empleos pueden ser vulnerables a inyecciones XSS si no se validan y sanean adecuadamente al ser renderizadas o guardadas.
+Impacto: Posible robo de sesión o ejecución de scripts maliciosos.
+Solución sugerida: Sanitización estricta de inputs (Zod / DOMPurify).
 
-## 6. Detalles Finales, Seguridad y Mejoras Propuestas
-[ ] Actualizar `README.md` (actualmente tiene el texto por defecto de create-next-app) con las instrucciones para levantar el proyecto Minú Empleos.
-[ ] Enviar notificaciones (Emails o In-App) cuando el estado de una postulación cambia.
-[ ] Implementar un sistema de verificación (`is_verified`) para destacar empresas confiables en la plataforma.
-[ ] Mejorar SEO añadiendo meta tags dinámicas en las ofertas de empleo y perfiles de empresa.
-[ ] Sanitización de inputs (Zod/DOMPurify) en las descripciones largas de los empleos para evitar inyecciones XSS y validación estricta de formularios.
-[ ] Añadir y auditar políticas RLS (Row Level Security) robustas en las tablas de Supabase y en los buckets de Storage (como hicimos con el permiso DELETE de CVs) para máxima seguridad.
+[ ] [ALTO] Falta validación y RLS robusto en Supabase
+Categoría: Seguridad / Backend
+Archivo: Base de Datos Supabase
+Línea: N/A
+Problema: Las tablas y buckets deben contar con políticas estrictas de Row Level Security (como se hizo con los CVs).
+Impacto: Usuarios o empresas malintencionadas podrían modificar o acceder a datos ajenos.
+Solución sugerida: Añadir y auditar políticas RLS en todas las tablas (`companies`, `jobs`, `applications`) y en el bucket `PROFILES`.
+
+[x] [MEDIO] Errores de ESLint y tipado genérico
+Categoría: TypeScript / Configuración
+Archivo: Múltiples (ej. JobSearchCatalog.tsx, TopJobs.tsx, auth.ts)
+Línea: Varias
+Problema: Uso excesivo de `any` explícitos y variables declaradas sin uso. Entidades no escapadas en JobActions.tsx.
+Impacto: Dificulta la mantenibilidad, y es un code smell que desactiva las bondades de TypeScript.
+Solución sugerida: Reemplazar `any` por tipos e interfaces específicas o `unknown`. Escapar entidades (usar `&quot;`).
+
+[ ] [MEDIO] Gestión de estado de postulaciones incompleta
+Categoría: Flujos de Empresa
+Archivo: src/app/panel-empresa/postulaciones/*
+Línea: N/A
+Problema: Las empresas pueden recibir postulaciones pero falta la funcionalidad para cambiar su estado (de pending a reviewed, accepted o rejected) y visualizar un panel global de las mismas.
+Impacto: La empresa no puede gestionar adecuadamente su embudo de contratación.
+Solución sugerida: Implementar la UI y el Server Action para cambiar los estados, así como un panel unificado de postulaciones.
+
+[ ] [MEDIO] Integración incompleta de bucket PROFILES para empresas
+Categoría: Funcionalidad / Storage
+Archivo: src/app/panel-empresa/ajustes/page.tsx
+Línea: N/A
+Problema: Falta completar la integración para que las empresas suban y gestionen su logo y portada en el bucket de Storage designado.
+Impacto: Perfiles de empresa visualmente limitados o incompletos.
+Solución sugerida: Conectar el uploader con el bucket `PROFILES` de Supabase similar a lo hecho con los CVs.
+
+[x] [BAJO] Texto incorrecto en página 404
+Categoría: Texto y Contenido
+Archivo: src/app/not-found.tsx
+Línea: 18
+Problema: El texto dice "Puede que el producto o la tienda hayan sido eliminados o movidos." Esto es un remanente de una plantilla de e-commerce.
+Impacto: Confusión para el usuario; da apariencia de falta de profesionalismo.
+Solución sugerida: Cambiar el texto a "Puede que el empleo, empresa o perfil que buscas haya sido eliminado o no exista."
+
+[ ] [BAJO] README.md sin actualizar
+Categoría: Documentación
+Archivo: README.md
+Línea: N/A
+Problema: Tiene el texto por defecto de create-next-app en lugar de las instrucciones de "Minú Empleos".
+Impacto: Dificulta el onboarding de otros desarrolladores.
+Solución sugerida: Escribir instrucciones claras para levantar el entorno local (variables de entorno necesarias, etc).
+
+[ ] [MEJORA] Notificaciones de cambio de estado
+Categoría: UX / Notificaciones
+Archivo: N/A
+Línea: N/A
+Problema: El candidato no es notificado cuando su postulación avanza en el proceso.
+Impacto: Incertidumbre en el usuario candidato.
+Solución sugerida: Enviar notificaciones (Emails o In-App) al actualizar el estado de `applications`.
+
+[x] [MEJORA] Sistema de verificación de empresas
+Categoría: UX / Confianza
+Archivo: N/A
+Línea: N/A
+Problema: Todas las empresas lucen igual sin distinción de verificación o confiabilidad oficial.
+Impacto: Menor confianza de los candidatos al postularse a empresas desconocidas.
+Solución sugerida: Implementar un flag `is_verified` visual (un check azul) y lógica de validación interna.
+
+[ ] [MEJORA] SEO dinámico para ofertas y perfiles
+Categoría: SEO
+Archivo: Rutas dinámicas (`[slug]/page.tsx`, `empresas/[id]/page.tsx`)
+Línea: N/A
+Problema: Falta generación dinámica de meta tags (OG, Title, Description) basadas en los datos de la BD.
+Impacto: Dificultad para indexar y compartir en redes ofertas laborales específicas.
+Solución sugerida: Implementar la función `generateMetadata` nativa de Next.js.

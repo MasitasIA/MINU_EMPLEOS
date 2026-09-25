@@ -8,6 +8,7 @@
   --foreground-subtle: #8ea3b8;
   --brand-primary: #005fb9;
   --brand-secondary: #00ad8e;
+  --brand-accent: #d46f23;
   --surface: #ffffff;
   --surface-muted: #f4f7fa;
   --border: #e3ebf2;
@@ -20,6 +21,7 @@
   --color-foreground-subtle: var(--foreground-subtle);
   --color-primary: var(--brand-primary);
   --color-secondary: var(--brand-secondary);
+  --color-accent: var(--brand-accent);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
   --color-border: var(--border);

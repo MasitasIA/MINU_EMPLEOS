@@ -2,8 +2,24 @@ import { JobCard } from "./JobCard";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+interface Job {
+  id: string;
+  slug: string;
+  company_id: string;
+  name: string;
+  job_type: string;
+  modality: string;
+  salary_min: number | null;
+  salary_max: number | null;
+  category_id?: string;
+  locality_id?: string;
+  companies?: { name: string; image_url?: string };
+  categories?: { name: string };
+  localities?: { ciudad: string };
+}
+
 interface TopJobsProps {
-  jobs: any[];
+  jobs: Job[];
 }
 
 export function TopJobs({ jobs }: TopJobsProps) {
@@ -30,7 +46,7 @@ export function TopJobs({ jobs }: TopJobsProps) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
           {jobs.map((job) => (
             <JobCard
               key={job.id}

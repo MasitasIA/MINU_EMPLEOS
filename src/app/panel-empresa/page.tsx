@@ -14,6 +14,7 @@ import {
   Users,
   Star,
   Eye,
+  ShieldCheck,
 } from "lucide-react";
 
 export const metadata = {
@@ -82,6 +83,14 @@ export default async function CompanyPanelPage() {
                 >
                   <Settings className="mr-2 h-4 w-4" /> Ajustes
                 </Link>
+                {!company.is_verified && (
+                  <Link
+                    href="/panel-empresa/verificacion"
+                    className="inline-flex items-center justify-center radius-button border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-bold text-blue-700 shadow-sm transition-all hover:bg-blue-100"
+                  >
+                    <ShieldCheck className="mr-2 h-4 w-4" /> Solicitar Verificación
+                  </Link>
+                )}
                 <Link
                   href="/panel-empresa/empleos/nuevo"
                   className="inline-flex items-center justify-center radius-button bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:brightness-110"

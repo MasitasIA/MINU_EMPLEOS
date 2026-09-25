@@ -63,7 +63,7 @@ export function ApplyJobButton({ jobId, isAuthenticated }: { jobId: string, isAu
         <button
           onClick={handleApplyClick}
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 radius-button bg-primary text-white py-3 font-bold px-4 hover:brightness-110 active:scale-95 transition-all shadow-md shadow-primary/20"
+          className="w-full flex items-center justify-center gap-2 radius-button bg-accent text-white py-3 font-bold px-4 hover:brightness-110 active:scale-95 transition-all shadow-md shadow-accent/20"
         >
           <Send className="h-5 w-5" /> Postularme Ahora
         </button>

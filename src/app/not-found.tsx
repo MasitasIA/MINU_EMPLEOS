@@ -16,7 +16,7 @@ export default function NotFound() {
       </h1>
       <p className="mb-8 max-w-md text-foreground-muted text-lg">
         Lo sentimos, no pudimos encontrar la ruta que buscas. Puede que el
-        producto o la tienda hayan sido eliminados o movidos.
+        empleo, perfil o empresa que buscas haya sido eliminado o no exista.
       </p>
 
       <div className="flex flex-col sm:flex-row gap-4">

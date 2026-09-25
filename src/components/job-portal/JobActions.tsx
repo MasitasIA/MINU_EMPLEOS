@@ -88,7 +88,7 @@ export function JobActions({
       <Modal isOpen={isDeleteModalOpen} onClose={() => !isLoading && setIsDeleteModalOpen(false)}>
         <h3 className="text-xl font-bold text-red-600 mb-2">Eliminar Oferta</h3>
         <p className="text-sm text-foreground-muted mb-4">
-          ¿Estás seguro de que deseas eliminar permanentemente la oferta de empleo <strong>"{jobName}"</strong>?
+          ¿Estás seguro de que deseas eliminar permanentemente la oferta de empleo <strong>&quot;{jobName}&quot;</strong>?
           Esto también eliminará todas las postulaciones asociadas y no se puede deshacer.
         </p>
         <div className="flex justify-end gap-3 mt-6">

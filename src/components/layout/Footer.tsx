@@ -1,9 +1,10 @@
 // Importaciones
 import Link from "next/link";
 import { Mail, Briefcase, Users, MapPin } from "lucide-react";
+import { UserSession } from "@/lib/session";
 
 // Componente de Footer
-export function Footer() {
+export function Footer({ user }: { user: UserSession | null }) {
   return (
     <footer className="mt-auto border-t border-border bg-white pt-12 pb-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -14,8 +15,8 @@ export function Footer() {
               Minú Empleos
             </h3>
             <p className="text-sm text-foreground-muted mb-4">
-              Conectando el talento local con las mejores oportunidades en
-              Guaminí y sus alrededores.
+              Conectando el talento local con las mejores oportunidades en el
+              interior de la Provincia de Buenos Aires.
             </p>
             <div className="flex items-center gap-2 text-sm text-foreground-muted">
               <MapPin className="h-4 w-4" />
@@ -46,22 +47,26 @@ export function Footer() {
                   Buscar Empleos
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/registro"
-                  className="hover:text-primary transition-colors"
-                >
-                  Crear Cuenta
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/iniciar"
-                  className="hover:text-primary transition-colors"
-                >
-                  Iniciar Sesión
-                </Link>
-              </li>
+              {!user && (
+                <>
+                  <li>
+                    <Link
+                      href="/registro"
+                      className="hover:text-primary transition-colors"
+                    >
+                      Crear Cuenta
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/iniciar"
+                      className="hover:text-primary transition-colors"
+                    >
+                      Iniciar Sesión
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 

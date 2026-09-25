@@ -22,6 +22,8 @@ Este archivo proporciona contexto y reglas específicas para los agentes de IA q
 - **Diseño UI/UX**: Mantener un diseño premium, limpio y responsivo. Usar clases globales definidas en `index.css` como `radius-button` para los botones, en lugar de clases utilitarias ad-hoc de Tailwind repetidas.
 - **Validaciones**: Realizar validación de inputs en el cliente y doble validación en los Server Actions (tamaño de archivo, extensiones, etc).
 - Mantener los componentes cliente (`"use client"`) lo más reducidos posible, prefiriendo Server Components para la carga de datos (`getUser`, `getProfile`).
+- **Estado de Filtros (Next.js)**: Evitar sincronizar el estado local con la URL mediante `useEffect` y llamadas a `setState` síncronas. En su lugar, derivar los estados iniciales de `searchParams` y actualizar la URL solo al realizar una acción (submit/click).
+- **Eliminación de Cuentas**: Debido a las políticas de Supabase, los Server Actions (server client) no pueden eliminar usuarios directamente de `auth.users` sin Service Role. Utilizar el RPC `delete_user` configurado en el backend o, en su defecto, eliminar el perfil público mediante RLS y hacer un `signOut()`.
 
 ## 4. Lineamientos Generales
 - **Idioma**: Toda la interfaz y comentarios deben estar en Español.
