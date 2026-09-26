@@ -104,10 +104,42 @@ Problema: Todas las empresas lucen igual sin distinción de verificación o conf
 Impacto: Menor confianza de los candidatos al postularse a empresas desconocidas.
 Solución sugerida: Implementar un flag `is_verified` visual (un check azul) y lógica de validación interna.
 
-[ ] [MEJORA] SEO dinámico para ofertas y perfiles
+[x] [MEJORA] SEO dinámico para ofertas y perfiles
 Categoría: SEO
 Archivo: Rutas dinámicas (`[slug]/page.tsx`, `empresas/[id]/page.tsx`)
 Línea: N/A
 Problema: Falta generación dinámica de meta tags (OG, Title, Description) basadas en los datos de la BD.
 Impacto: Dificultad para indexar y compartir en redes ofertas laborales específicas.
-Solución sugerida: Implementar la función `generateMetadata` nativa de Next.js.
+Solución sugerida: Implementar la función `generateMetadata` nativa de Next.js. (Implementado con Schema.org JSON-LD para JobPosting).
+
+[ ] [ALTO] Eliminar contenido de prueba en Producción
+Categoría: Base de Datos / Limpieza
+Archivo: Supabase (Tablas `jobs`, `companies`, `profiles`)
+Línea: N/A
+Problema: Existen empleos y empresas de prueba con texto "Probando..." o "Lorem Ipsum" en la base de datos de producción.
+Impacto: Mala imagen pública al ver ofertas falsas o test entries.
+Solución sugerida: Eliminar manualmente los registros de prueba desde el Dashboard de Supabase con cuidado de no afectar datos reales.
+
+[x] [ALTO] Implementar Sitemap dinámico y Robots.txt
+Categoría: SEO
+Archivo: `src/app/sitemap.ts` y `src/app/robots.ts`
+Línea: N/A
+Problema: La aplicación carece de un sitemap.xml para indexar las ofertas dinámicas y un robots.txt para bloquear las rutas privadas (login, panel, mi-cuenta).
+Impacto: Visibilidad pobre en buscadores y posible indexación de URLs privadas.
+Solución sugerida: Generar sitemap dinámicamente desde base de datos. (Implementado).
+
+[ ] [MEDIO] Sistema de Expiración de Ofertas
+Categoría: Lógica de Negocio
+Archivo: Base de Datos / `src/app/actions/jobs.ts`
+Línea: N/A
+Problema: Actualmente no existe una estrategia clara de cuándo una oferta vence, permitiendo que ofertas antiguas reciban postulaciones.
+Impacto: Frustración en candidatos y spam para empresas.
+Solución sugerida: Añadir campo `expires_at` y estados (`published`, `closed`, `expired`) en Supabase y ocultar/cerrar ofertas vencidas.
+
+[ ] [MEDIO] Protección contra Spam en Ofertas
+Categoría: Seguridad
+Archivo: `src/app/actions/jobs.ts`
+Línea: N/A
+Problema: No hay un cooldown ni rate limiting en la creación de ofertas por empresa.
+Impacto: Una empresa malintencionada o bot puede inundar la base de datos de spam.
+Solución sugerida: Validar límite de publicaciones por período o implementar rate limiting en el backend.

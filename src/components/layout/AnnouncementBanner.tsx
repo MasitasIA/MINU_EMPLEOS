@@ -36,7 +36,7 @@ export function AnnouncementBanner({
   };
 
   const Content = () => (
-    <div className="flex items-center justify-center text-sm font-bold">
+    <div className="flex items-center justify-center text-sm font-medium">
       <span className="truncate">{text}</span>
       {url && (
         <span className="ml-2 inline-flex font-bold hover:underline">

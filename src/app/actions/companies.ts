@@ -357,11 +357,7 @@ export async function requestCompanyVerification(formData: FormData) {
       return { success: false, error: "Error al registrar la solicitud." };
     }
 
-    // Simular el envío de un correo electrónico
-    console.log(
-      `[SIMULACIÓN DE EMAIL] Enviando correo a soporte@minuempleos.com: Nueva verificación pendiente para ${legalName} (CUIT: ${taxId})`,
-    );
-
+    // TODO: Implementar el envío real de correo usando Supabase Edge Functions o un servicio de terceros (Resend, SendGrid, etc).
     return { success: true };
   } catch (error) {
     console.error("Error inesperado en requestCompanyVerification:", error);

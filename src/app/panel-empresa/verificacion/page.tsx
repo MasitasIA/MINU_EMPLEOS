@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShieldCheck, Upload, AlertCircle, FileText, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Upload, AlertCircle, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getCompanyByOwner, requestCompanyVerification } from "@/app/actions/companies";
 import { createClient } from "@/lib/supabase/client";
@@ -99,7 +99,9 @@ export default function VerificacionPage() {
     return (
       <div className="bg-surface-muted min-h-screen py-12">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <div className="p-8 text-center text-foreground-muted">Cargando...</div>
+          <div className="flex justify-center p-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         </div>
       </div>
     );

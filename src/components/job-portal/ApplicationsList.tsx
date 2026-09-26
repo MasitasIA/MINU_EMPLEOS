@@ -8,6 +8,7 @@ import {
   Clock,
   FileText,
   ChevronLeft,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { updateApplicationStatus } from "@/app/actions/applications";
@@ -203,10 +204,12 @@ export function ApplicationsList({
                       }
                       className="flex w-full sm:w-auto items-center justify-center gap-2 radius-button bg-surface px-4 py-2 text-sm font-bold text-foreground ring-1 ring-border hover:bg-surface-muted transition-colors disabled:opacity-50"
                     >
-                      <FileText className="h-4 w-4" />
-                      {loadingAppId === `resume-${app.profiles.resume_url}`
-                        ? "Cargando..."
-                        : "Ver CV"}
+                      {loadingAppId === `resume-${app.profiles.resume_url}` ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FileText className="h-4 w-4" />
+                      )}
+                      <span>Ver CV</span>
                     </button>
                   ) : (
                     <span className="text-xs text-foreground-muted">

@@ -8,6 +8,45 @@ import { ApplyJobButton } from "@/components/job-portal/ApplyJobButton";
 import { getUser } from "@/lib/session";
 import { hasUserAppliedToJob } from "@/app/actions/applications";
 
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const resolvedParams = await params;
+  const slug = resolvedParams.id;
+  const job = await getJobById(slug);
+
+  if (!job) {
+    return {
+      title: "Empleo no encontrado | Minú Empleos",
+      description: "La oferta de empleo que buscas no existe o ha sido eliminada.",
+    };
+  }
+
+  const companyName = job.companies?.name || "Empresa Confidencial";
+  const title = `${job.name} — ${companyName} | Minú Empleos`;
+  const description = `Postúlate para ${job.name} en ${companyName}. ${job.modality || ""} ${job.type || ""}. Ubicación: ${job.address || "No especificada"}.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      siteName: "Minú Empleos",
+      images: job.companies?.image_url ? [{ url: job.companies.image_url }] : undefined,
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
+    alternates: {
+      canonical: `/empleos/${slug}`,
+    }
+  };
+}
+
 export default async function JobPage({
   params,
 }: {
@@ -35,8 +74,46 @@ export default async function JobPage({
     hasApplied = await hasUserAppliedToJob(job.id, user.id);
   }
 
+  // JSON-LD for JobPosting SEO
+  const jsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "JobPosting",
+    title: job.name,
+    description: job.description || job.name,
+    datePosted: job.created_at,
+    hiringOrganization: {
+      "@type": "Organization",
+      name: job.companies?.name || "Empresa Confidencial",
+      logo: job.companies?.image_url || undefined,
+    },
+    jobLocation: {
+      "@type": "Place",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: job.localities?.ciudad || "",
+        streetAddress: job.address || "",
+        addressCountry: "AR",
+      }
+    },
+    employmentType: job.type === "Full-time" ? "FULL_TIME" : job.type === "Part-time" ? "PART_TIME" : "OTHER",
+    baseSalary: job.salary ? {
+      "@type": "MonetaryAmount",
+      currency: "ARS",
+      value: {
+        "@type": "QuantitativeValue",
+        value: job.salary,
+        unitText: "MONTH"
+      }
+    } : undefined
+  };
+
   return (
-    <div className="bg-surface-muted min-h-screen pb-16">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="bg-surface-muted min-h-screen pb-16">
       {/* Breadcrumbs */}
       <div className="bg-white border-b border-border py-4">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -169,6 +246,7 @@ export default async function JobPage({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
