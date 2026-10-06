@@ -3,10 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Search, Briefcase, Building, FileText, Users } from "lucide-react";
+import {
+  User,
+  Search,
+  Briefcase,
+  Building,
+  FileText,
+  Users,
+} from "lucide-react";
 import Image from "next/image";
 import { AuthModal } from "@/components/ui/AuthModal";
 import { UserSession } from "@/lib/session";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 
 export function Navbar({ user }: { user: UserSession | null }) {
   const router = useRouter();
@@ -43,9 +51,9 @@ export function Navbar({ user }: { user: UserSession | null }) {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar empleos o empresas..."
+                placeholder="Buscar empleos..."
                 className="w-full radius-predefined border border-border bg-surface-muted py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
-                aria-label="Buscar empleos o empresas"
+                aria-label="Buscar empleos"
               />
               <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-subtle" />
             </form>
@@ -98,28 +106,31 @@ export function Navbar({ user }: { user: UserSession | null }) {
             <div className="h-6 w-px bg-border hidden sm:block"></div>
 
             {user ? (
-              <Link
-                href="/mi-cuenta"
-                className="flex items-center gap-2 radius-button p-1 sm:p-2 text-primary font-bold transition-colors hover:bg-primary/10"
-              >
-                {user.avatar_url ? (
-                  <div className="relative h-8 w-8 overflow-hidden rounded-full border border-primary/20">
-                    {/* Usamos img estándar para evitar problemas de next/image con dominios externos no configurados */}
-                    <img
-                      src={user.avatar_url}
-                      alt={user.username}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20 text-sm font-bold uppercase">
-                    {user.username.charAt(0)}
-                  </div>
-                )}
-                <span className="hidden text-sm sm:block truncate max-w-[100px]">
-                  {user.username}
-                </span>
-              </Link>
+              <>
+                <NotificationBell />
+                <Link
+                  href="/mi-cuenta"
+                  className="flex items-center gap-2 radius-button p-1 sm:p-2 text-primary font-bold transition-colors hover:bg-primary/10"
+                >
+                  {user.avatar_url ? (
+                    <div className="relative h-8 w-8 overflow-hidden rounded-full border border-primary/20">
+                      {/* Usamos img estándar para evitar problemas de next/image con dominios externos no configurados */}
+                      <img
+                        src={user.avatar_url}
+                        alt={user.username}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20 text-sm font-bold uppercase">
+                      {user.username.charAt(0)}
+                    </div>
+                  )}
+                  <span className="hidden text-sm sm:block truncate max-w-[100px]">
+                    {user.username}
+                  </span>
+                </Link>
+              </>
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}

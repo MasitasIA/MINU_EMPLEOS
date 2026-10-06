@@ -163,7 +163,11 @@ export default async function CompanyPanelPage() {
                               {job.categories?.name || "Categoría no definida"}
                             </span>
                             <span className="flex items-center gap-1">
-                              {job.is_active ? (
+                              {job.expires_at && new Date(job.expires_at) < new Date() ? (
+                                <span className="text-red-500 font-semibold">
+                                  • Expirado
+                                </span>
+                              ) : job.is_active ? (
                                 <span className="text-green-600 font-semibold">
                                   • Activo
                                 </span>

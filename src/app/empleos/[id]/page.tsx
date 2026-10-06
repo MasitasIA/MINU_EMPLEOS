@@ -208,9 +208,9 @@ export default async function JobPage({
               <div className="flex justify-between">
                 <dt className="text-foreground-muted">Salario</dt>
                 <dd className="font-medium text-foreground">
-                  {job.salary_min && job.salary_max 
-                    ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
-                    : "A convenir"}
+                  {job.salary_min
+                    ? `$${job.salary_min.toLocaleString()}${job.salary_max ? ` - $${job.salary_max.toLocaleString()}` : ''}`
+                    : "No especificado"}
                 </dd>
               </div>
               <div className="flex justify-between">
@@ -228,7 +228,11 @@ export default async function JobPage({
             </dl>
 
             <div className="pt-6 border-t border-border">
-              {hasApplied ? (
+              {job.expires_at && new Date(job.expires_at) < new Date() ? (
+                <div className="w-full flex items-center justify-center gap-2 radius-button bg-surface-muted border border-border text-foreground-muted py-3 font-bold px-4 text-center cursor-default">
+                  Esta oferta ha expirado
+                </div>
+              ) : hasApplied ? (
                 <div className="w-full flex items-center justify-center gap-2 radius-button bg-green-50 border border-green-200 text-green-700 py-3 font-bold px-4 text-center cursor-default">
                   <CheckCircle2 className="h-5 w-5" />
                   Ya te postulaste a este empleo

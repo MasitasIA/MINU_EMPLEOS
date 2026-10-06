@@ -20,6 +20,7 @@ export async function getAllJobs() {
       .from("jobs")
       .select("*, companies(name, image_url), categories(name), localities(ciudad)")
       .eq("is_active", true)
+      .gte("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -93,6 +94,20 @@ export async function createJob(jobData: any) {
     if (!company || company.owner_id !== user.id) {
       return { success: false, error: "No tienes permiso para publicar en esta empresa" };
     }
+
+    // Anti-Spam: Max 5 empleos por día por empresa
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const { count, error: countError } = await supabase
+      .from("jobs")
+      .select("*", { count: "exact", head: true })
+      .eq("company_id", parsedData.data.company_id)
+      .gte("created_at", today.toISOString());
+
+    if (countError) return { success: false, error: "Error validando seguridad" };
+    if (count !== null && count >= 5) {
+      return { success: false, error: "Has alcanzado el límite de 5 publicaciones por día. Intenta de nuevo mañana." };
+    }
     
     // Generar slug
     const baseSlug = parsedData.data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -100,6 +115,21 @@ export async function createJob(jobData: any) {
 
     const sanitizedDescription = sanitizeHtml(parsedData.data.description, sanitizeOptions);
     const sanitizedRequirements = parsedData.data.requirements ? sanitizeHtml(parsedData.data.requirements, sanitizeOptions) : null;
+
+    // Lógica de Expiración (Max 6 meses)
+    let expiresAtDate = new Date();
+    expiresAtDate.setMonth(expiresAtDate.getMonth() + 1); // Por defecto: 1 mes
+    if (parsedData.data.expires_at) {
+      const parsedDate = new Date(parsedData.data.expires_at);
+      const maxDate = new Date();
+      maxDate.setMonth(maxDate.getMonth() + 6);
+      
+      if (parsedDate > maxDate) {
+        expiresAtDate = maxDate;
+      } else if (parsedDate > new Date()) {
+        expiresAtDate = parsedDate;
+      }
+    }
 
     const { error } = await supabase.from("jobs").insert({
       company_id: parsedData.data.company_id,
@@ -115,6 +145,8 @@ export async function createJob(jobData: any) {
       requirements: sanitizedRequirements,
       locality_id: parsedData.data.locality_id,
       address: parsedData.data.address || null,
+      expires_at: expiresAtDate.toISOString(),
+      is_active: true,
     });
 
     if (error) {
@@ -152,6 +184,20 @@ export async function updateJob(id: string, jobData: any) {
     const sanitizedDescription = sanitizeHtml(parsedData.data.description, sanitizeOptions);
     const sanitizedRequirements = parsedData.data.requirements ? sanitizeHtml(parsedData.data.requirements, sanitizeOptions) : null;
 
+    // Lógica de Expiración
+    let expiresAtDate = undefined;
+    if (parsedData.data.expires_at) {
+      const parsedDate = new Date(parsedData.data.expires_at);
+      const maxDate = new Date();
+      maxDate.setMonth(maxDate.getMonth() + 6);
+      
+      if (parsedDate > maxDate) {
+        expiresAtDate = maxDate;
+      } else {
+        expiresAtDate = parsedDate;
+      }
+    }
+
     const { error } = await supabase.from("jobs").update({
       category_id: parsedData.data.category_id,
       name: parsedData.data.name,
@@ -164,6 +210,7 @@ export async function updateJob(id: string, jobData: any) {
       requirements: sanitizedRequirements,
       locality_id: parsedData.data.locality_id,
       address: parsedData.data.address || null,
+      ...(expiresAtDate && { expires_at: expiresAtDate.toISOString() }),
     }).eq("id", id);
 
     if (error) {

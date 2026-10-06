@@ -11,15 +11,26 @@ export async function applyToJob(jobId: string, coverLetter?: string) {
 
     const supabase = await createClient();
 
-    // Obtener perfil para el resume_url
+    // Verificar perfil para el resume_url y nombre
     const { data: profile } = await supabase
       .from("profiles")
-      .select("resume_url")
+      .select("resume_url, full_name")
       .eq("id", user.id)
       .single();
 
     if (!profile?.resume_url) {
       return { success: false, error: "Debes subir tu CV en tu perfil antes de postularte" };
+    }
+
+    // Verificar que la oferta exista, esté activa y no haya expirado
+    const { data: job } = await supabase
+      .from("jobs")
+      .select("is_active, expires_at, name, company_id")
+      .eq("id", jobId)
+      .single();
+
+    if (!job || !job.is_active || (job.expires_at && new Date(job.expires_at) < new Date())) {
+      return { success: false, error: "Esta oferta ha expirado o ya no se encuentra activa." };
     }
 
     // Verificar si ya se postuló
@@ -31,7 +42,8 @@ export async function applyToJob(jobId: string, coverLetter?: string) {
       .maybeSingle();
 
     if (existingApp) {
-      return { success: false, error: "Ya te has postulado a este empleo" };
+      // Error silencioso: devolvemos true para no romper la UX
+      return { success: true };
     }
 
     const { error } = await supabase.from("applications").insert({
@@ -43,8 +55,35 @@ export async function applyToJob(jobId: string, coverLetter?: string) {
     });
 
     if (error) {
+      // Si la base de datos lanza error de constraint única (23505), lo ignoramos silenciosamente
+      if (error.code === '23505') {
+        return { success: true };
+      }
       console.error("Error al postularse:", error);
       return { success: false, error: "Ocurrió un error al enviar tu postulación" };
+    }
+
+    // Obtener owner de la empresa para notificar
+    if (job.company_id) {
+      const { data: company } = await supabase
+        .from("companies")
+        .select("owner_id")
+        .eq("id", job.company_id)
+        .single();
+        
+      if (company?.owner_id) {
+        const { error: notifError } = await supabase.from("notifications").insert({
+          user_id: company.owner_id,
+          title: "Nueva postulación",
+          message: `${profile.full_name || 'Un candidato'} se ha postulado a "${job.name}".`,
+          type: "new_application",
+          link: `/panel-empresa/empleos/${jobId}/postulaciones`
+        });
+        
+        if (notifError) {
+          console.error("Error guardando notificación para empresa:", notifError);
+        }
+      }
     }
 
     revalidatePath(`/empleos`);
@@ -192,13 +231,13 @@ export async function updateApplicationStatus(applicationId: string, status: 'pe
         const supabase = await createClient();
         
         // Verificar que la empresa que publicó el empleo pertenece al usuario actual
-        const { data: application } = await supabase.from("applications").select("job_id").eq("id", applicationId).single();
+        const { data: application } = await supabase.from("applications").select("job_id, candidate_id").eq("id", applicationId).single();
         if (!application) return { success: false };
         
-        const { data: job } = await supabase.from("jobs").select("company_id").eq("id", application.job_id).single();
+        const { data: job } = await supabase.from("jobs").select("company_id, name").eq("id", application.job_id).single();
         if (!job) return { success: false };
         
-        const { data: company } = await supabase.from("companies").select("owner_id").eq("id", job.company_id).single();
+        const { data: company } = await supabase.from("companies").select("owner_id, name").eq("id", job.company_id).single();
         if (!company || company.owner_id !== user.id) return { success: false };
         
         const { error } = await supabase
@@ -219,6 +258,35 @@ export async function updateApplicationStatus(applicationId: string, status: 'pe
           created_by: user.id,
           notes: `Estado cambiado a ${status}`
         });
+
+        // Notificar al candidato
+        if (application.candidate_id) {
+          let title = "Actualización de postulación";
+          let message = `La empresa ${company.name} ha actualizado el estado de tu postulación para "${job.name}".`;
+          
+          if (status === 'reviewed') {
+            title = "Postulación revisada";
+            message = `La empresa ${company.name} ha revisado tu postulación para "${job.name}".`;
+          } else if (status === 'accepted') {
+            title = "¡Has sido seleccionado!";
+            message = `La empresa ${company.name} te ha seleccionado para continuar en el proceso de "${job.name}".`;
+          } else if (status === 'rejected') {
+            title = "Postulación rechazada";
+            message = `La empresa ${company.name} ha decidido no continuar con tu postulación para "${job.name}".`;
+          }
+
+          const { error: notifError } = await supabase.from("notifications").insert({
+            user_id: application.candidate_id,
+            title,
+            message,
+            type: "status_change",
+            link: "/mis-postulaciones"
+          });
+          
+          if (notifError) {
+            console.error("Error guardando notificación para candidato:", notifError);
+          }
+        }
     
         revalidatePath(`/panel-empresa`);
         return { success: true };

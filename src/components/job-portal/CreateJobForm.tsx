@@ -32,6 +32,7 @@ export function CreateJobForm({ companyId, categories, localities, initialData }
     job_type: initialData?.job_type || "Full-time",
     modality: initialData?.modality || "Presencial",
     address: initialData?.address || "",
+    expires_at: initialData?.expires_at ? new Date(initialData.expires_at).toISOString().split('T')[0] : "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -206,11 +207,12 @@ export function CreateJobForm({ companyId, categories, localities, initialData }
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 border-t border-border pt-6">
           <Input
-            label="Salario Mínimo (Opcional)"
+            label="Salario Mínimo *"
             id="salary_min"
             name="salary_min"
             type="number"
-            min="0"
+            min="1"
+            required
             value={formData.salary_min}
             onChange={handleChange}
             placeholder="Ej. 500000"
@@ -237,6 +239,20 @@ export function CreateJobForm({ companyId, categories, localities, initialData }
             value={formData.vacancies}
             onChange={handleChange}
           />
+        </div>
+
+        <div className="border-t border-border pt-6 mt-6">
+          <Input
+            label="Fecha de Vencimiento de la Oferta (Opcional)"
+            id="expires_at"
+            name="expires_at"
+            type="date"
+            value={formData.expires_at}
+            onChange={handleChange}
+            min={new Date().toISOString().split('T')[0]}
+            max={new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().split('T')[0]}
+          />
+          <p className="text-xs text-foreground-muted mt-1">Si la dejas en blanco, la oferta vencerá automáticamente en 1 mes. Límite máximo: 6 meses.</p>
         </div>
       </div>
 

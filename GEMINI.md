@@ -28,3 +28,9 @@ Este archivo proporciona contexto y reglas específicas para los agentes de IA q
 ## 4. Lineamientos Generales
 - **Idioma**: Toda la interfaz y comentarios deben estar en Español.
 - **Legalidad**: El sitio opera bajo las Leyes de Argentina N° 25.326 y N° 23.592. Siempre pedir consentimiento en el registro y permitir a los usuarios borrar o hacer privado su CV.
+
+## 5. Reglas de Lógica de Negocio (Actualizadas)
+- **Expiración de Ofertas**: La duración de una oferta la elige el empleador, pero con un límite máximo estricto de 6 meses.
+- **Postulaciones Dobles**: Si un usuario intenta postularse dos veces a la misma oferta, el sistema debe devolver un error silencioso (sin romper la experiencia del usuario).
+- **Anti-Spam de Ofertas**: El límite máximo de creación de ofertas es de 5 por día por empresa.
+- **Seguridad (RLS)**: Los scripts SQL para políticas de Row Level Security se entregan en bloques de código para que el usuario los ejecute manualmente en el SQL Editor de Supabase.

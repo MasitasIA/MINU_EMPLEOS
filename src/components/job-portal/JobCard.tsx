@@ -97,10 +97,10 @@ export function JobCard({
             {salaryMin ? (
               <>
                 {formatCurrency(salaryMin)}
-                {salaryMax ? ` - ${formatCurrency(salaryMax)}` : '+'}
+                {salaryMax ? ` - ${formatCurrency(salaryMax)}` : ''}
               </>
             ) : (
-              <span className="text-foreground-muted font-normal text-sm">Salario a convenir</span>
+              <span className="text-foreground-muted font-normal text-sm">No especificado</span>
             )}
           </span>
         </div>
