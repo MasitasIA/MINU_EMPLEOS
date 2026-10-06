@@ -35,7 +35,7 @@ export function AnnouncementBanner({
     localStorage.setItem(bannerId, "true");
   };
 
-  const Content = () => (
+  const content = (
     <div className="flex items-center justify-center text-sm font-medium">
       <span className="truncate">{text}</span>
       {url && (
@@ -53,11 +53,11 @@ export function AnnouncementBanner({
           href={url}
           className="block hover:opacity-90 transition-opacity pr-6"
         >
-          <Content />
+          {content}
         </Link>
       ) : (
         <div className="pr-6">
-          <Content />
+          {content}
         </div>
       )}
       <button

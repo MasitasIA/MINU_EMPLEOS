@@ -3,11 +3,21 @@
 import { useState, useEffect, useRef } from "react";
 import { Bell, Briefcase, UserCheck, Eye, FileText, CheckCircle2, XCircle } from "lucide-react";
 import { getNotifications, markAsRead, markAllAsRead } from "@/app/actions/notifications";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+interface NotificationItem {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: string;
+  link: string | null;
+  is_read: boolean;
+  created_at: string;
+}
+
 export function NotificationBell() {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -20,6 +30,7 @@ export function NotificationBell() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line
     fetchNotifications();
     
     // Polling ligero cada 1 minuto
@@ -48,7 +59,7 @@ export function NotificationBell() {
     setNotifications(notifications.map(n => ({ ...n, is_read: true })));
   };
 
-  const handleNotificationClick = async (notification: any) => {
+  const handleNotificationClick = async (notification: NotificationItem) => {
     if (!notification.is_read) {
       await markAsRead(notification.id);
       setUnreadCount(prev => Math.max(0, prev - 1));

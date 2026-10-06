@@ -1,8 +1,7 @@
 "use client";
 
 // Importaciones
-import { useEffect } from "react";
-import { X, UserPlus, LogIn, Store } from "lucide-react";
+import { UserPlus, LogIn, Store } from "lucide-react";
 import Link from "next/link";
 import { Modal } from "./Modal";
 
