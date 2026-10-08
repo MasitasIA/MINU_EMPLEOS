@@ -1,36 +1,64 @@
-# Reglas y Contexto del Proyecto: Minú Empleos
+# PROYECTO: Minú Empleos - Memoria Técnica
 
-Este archivo proporciona contexto y reglas específicas para los agentes de IA que trabajen en este proyecto.
+*Fecha de última auditoría: Octubre 2026*
 
-## 1. Stack Tecnológico
-- **Framework**: Next.js 14+ (App Router).
-- **Lenguaje**: TypeScript estricto.
-- **Estilos**: Tailwind CSS con variables personalizadas (no usar colores quemados, usar `bg-surface-muted`, `text-foreground`, `radius-predefined`, etc.).
-- **Base de Datos y Auth**: Supabase.
-- **Iconos**: Lucide React.
+## PROJECT OVERVIEW
+- **Propósito:** Portal de empleos enfocado en la localidad de Guaminí y alrededores, permitiendo a empresas publicar ofertas y a candidatos postularse.
+- **Stack Tecnológico:** Next.js 14+ (App Router), React 19, TypeScript estricto, Tailwind CSS v4, Supabase (Auth, Database, Storage), Lucide React.
+- **Arquitectura:** Arquitectura Server-Side Rendering (SSR) con Next.js App Router. Uso de Server Actions para mutaciones (crear empleos, postularse, actualizar perfil). Las consultas de datos se realizan mayormente en Server Components (`page.tsx`) antes del renderizado.
+- **Servicios Externos:** Supabase y Cloudflare Pages (Deployment).
 
-## 2. Arquitectura de Supabase (Portal de Empleos)
-- `profiles`: Maneja perfiles de candidatos (`full_name`, `phone`, `bio`, `title`, `is_public`, `resume_url`).
-- `companies`: Perfiles de empresas reclutadoras. Incluye tamaño, rubro (category_id), localidad (locality_id), contacto (`phone`, `website`), dirección, redes sociales (`linkedin_url`, `social_urls`) logo y cover.
-- `jobs`: Ofertas laborales (Incluye vacantes, modalidad, tipo de empleo, `address`, categoría y localidad).
-- `applications`: Relación entre `profiles` y `jobs` (Estado de postulaciones, CV adjunto y `cover_letter`).
-- `application_events`: Registra el historial de cambios de estado de una postulación (`event_type`, `new_status`, `notes`).
-- **Storage**: Uso del bucket `RESUMES` para almacenar los CVs en formato PDF y el bucket `PROFILES` para los logos de las empresas.
+## ARCHITECTURE
+- **Frontend:** Componentes funcionales en React. Tailwind para estilos globales (`index.css` / `globals.css`) con variables custom (ej. `bg-surface-muted`, `radius-button`).
+- **Backend (Server Actions):** Toda la lógica de negocio y mutaciones reside en `src/app/actions/*.ts`.
+- **Supabase:** Base de datos relacional PostgreSQL expuesta vía PostgREST. Manejo de sesiones por cookies (`@supabase/ssr`).
+- **Autenticación:** Supabase Auth (Email/Password). El registro dispara un Trigger en DB (`on_auth_user_created`) que inserta el perfil público en `profiles`.
+- **Flujo de Datos:** 
+  1. `Page` (Server Component) llama a Server Actions o DB queries.
+  2. Pasa datos al Client Component.
+  3. Client Component usa Server Actions para enviar formularios.
 
-## 3. Reglas de Desarrollo Frontend
-- Usar **Server Actions** (`src/app/actions`) para todas las mutaciones de base de datos y Storage (ej. subida de archivos, actualizaciones de perfil).
-- **Diseño UI/UX**: Mantener un diseño premium, limpio y responsivo. Usar clases globales definidas en `index.css` como `radius-button` para los botones, en lugar de clases utilitarias ad-hoc de Tailwind repetidas.
-- **Validaciones**: Realizar validación de inputs en el cliente y doble validación en los Server Actions (tamaño de archivo, extensiones, etc).
-- Mantener los componentes cliente (`"use client"`) lo más reducidos posible, prefiriendo Server Components para la carga de datos (`getUser`, `getProfile`).
-- **Estado de Filtros (Next.js)**: Evitar sincronizar el estado local con la URL mediante `useEffect` y llamadas a `setState` síncronas. En su lugar, derivar los estados iniciales de `searchParams` y actualizar la URL solo al realizar una acción (submit/click).
-- **Eliminación de Cuentas**: Debido a las políticas de Supabase, los Server Actions (server client) no pueden eliminar usuarios directamente de `auth.users` sin Service Role. Utilizar el RPC `delete_user` configurado en el backend o, en su defecto, eliminar el perfil público mediante RLS y hacer un `signOut()`.
+## IMPORTANT CONSTRAINTS
+- **Deployment en Cloudflare:** No se pueden utilizar APIs de Node.js nativas o archivos físicos complejos (como `wrangler.jsonc` automático) sin causar conflictos en el build. Se prefiere configuración mediante dashboard.
+- **Supabase Keys:** La `NEXT_PUBLIC_SUPABASE_ANON_KEY` está hardcodeada como fallback en los clientes debido a inestabilidad de variables de entorno de Cloudflare durante algunos builds. Esto **exige** que las políticas RLS de Supabase sean perfectas.
+- **Service Role:** No se utiliza `service_role` en el cliente ni en Server Actions (por seguridad), obligando a depender de RPCs (ej. `delete_user`) o RLS estricto para operaciones complejas de admin.
 
-## 4. Lineamientos Generales
-- **Idioma**: Toda la interfaz y comentarios deben estar en Español.
-- **Legalidad**: El sitio opera bajo las Leyes de Argentina N° 25.326 y N° 23.592. Siempre pedir consentimiento en el registro y permitir a los usuarios borrar o hacer privado su CV.
+## KNOWN ISSUES (Resultados de Auditoría)
+1. **Performance (Búsqueda Cliente):** `JobSearchCatalog.tsx` recibe **todos** los empleos activos al cliente y realiza el filtro en el browser. Esto escalará muy mal. Además, no actualiza la URL con los `searchParams`, rompiendo el SEO y la capacidad de compartir links de búsqueda.
+2. **Dependencia Fuerte del Frontend para SEO:** Faltan metadatos OpenGraph en el `layout.tsx` base.
+3. **Manejo de Roles:** No hay diferenciación real entre "Candidato" y "Empresa" a nivel Supabase Auth, todos son usuarios. Un usuario puede postularse a empleos y crear empresas al mismo tiempo.
+4. **Rate Limiting Ausente:** Los endpoints (Server Actions) como `createJob` o `applyToJob` pueden ser abusados por bots. Existe una validación manual anti-spam (5 empleos al día por empresa), pero no protección real de red.
 
-## 5. Reglas de Lógica de Negocio (Actualizadas)
-- **Expiración de Ofertas**: La duración de una oferta la elige el empleador, pero con un límite máximo estricto de 6 meses.
-- **Postulaciones Dobles**: Si un usuario intenta postularse dos veces a la misma oferta, el sistema debe devolver un error silencioso (sin romper la experiencia del usuario).
-- **Anti-Spam de Ofertas**: El límite máximo de creación de ofertas es de 5 por día por empresa.
-- **Seguridad (RLS)**: Los scripts SQL para políticas de Row Level Security se entregan en bloques de código para que el usuario los ejecute manualmente en el SQL Editor de Supabase.
+## SECURITY NOTES
+- **Protección de Rutas:** Se realiza en los Server Components (ej. `if (!user) redirect()`). El `middleware.ts` no protege rutas actualmente.
+- **IDOR Protegido:** Las acciones como `updateJob`, `deleteJob` y `toggleJobStatus` validan correctamente en el backend que `company.owner_id === user.id`.
+- **Storage Seguro:** Los CVs (`RESUMES`) se manejan mediante Signed URLs, lo cual es correcto.
+- **Alerta RLS:** Dado que la ANON KEY está hardcodeada como fallback, **todas las tablas deben tener RLS estricto**. Si falta una política de SELECT o UPDATE, cualquier usuario malicioso puede modificar la DB desde su consola.
+
+## SEO NOTES
+- Bien estructurado con `sitemap.ts` y `robots.ts`.
+- Las URLs de empleos (`/empleos/[slug]`) y empresas (`/empresas/[slug]`) están optimizadas.
+- **Problema:** Los filtros de búsqueda no cambian la URL. Deberían usar `router.push("?q=termino")` para permitir navegación y compartir búsquedas.
+
+## PERFORMANCE NOTES
+- **Imágenes:** Se utiliza `next/image` correctamente.
+- **Bundle Size:** Se envía mucha lógica al cliente en componentes gigantes como `EditProfileForm` y `JobSearchCatalog`.
+
+## TECHNICAL DEBT
+- El estado de filtros en `JobSearchCatalog` usa `useState` + `useEffect` (implícito al derivar de `searchParams`) en lugar de leer/escribir directamente a la URL.
+- Existen funciones `TODO` como `stats.ts` (Analytics) que no hacen nada.
+- Componentes masivos que necesitan dividirse (ej. `CompanySettingsForm.tsx` con 19KB).
+
+## DECISIONS
+- **Hardcode de Anon Key:** Aceptado temporalmente por conflictos con Cloudflare Pages.
+- **Sin Eliminar Cuentas Auth Directamente:** Supabase no permite borrar `auth.users` desde el cliente sin admin privileges. Se creó una RPC `delete_user` en la DB como solución (o borrado lógico).
+- **Reportes:** Se implementó `reports` con Server Actions, RLS, e interfaz para Job, Company, Profile.
+
+## DO NOT CHANGE WITHOUT REVIEW
+- Archivos de configuración de Supabase SSR (`src/lib/supabase/*`).
+- Lógica de autenticación que dependa del trigger `on_auth_user_created`.
+- `index.css` (Tailwind custom variables).
+
+## AUDIT STATUS
+**Auditoría Integral Completada (Octubre 2026).**
+Ver `TODO.txt` para el plan de acción ejecutable.

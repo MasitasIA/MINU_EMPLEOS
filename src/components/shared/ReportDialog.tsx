@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Modal } from "./ui/Modal";
-import { Button } from "./ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
 import { Flag, Loader2 } from "lucide-react";
 import { submitReport, ReportEntityType } from "@/app/actions/reports";
 
@@ -33,7 +33,12 @@ const REPORT_REASONS = {
   ],
 };
 
-export function ReportDialog({ entityType, entityId, triggerClassName, triggerText = "Reportar" }: ReportDialogProps) {
+export function ReportDialog({
+  entityType,
+  entityId,
+  triggerClassName,
+  triggerText = "Reportar",
+}: ReportDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [description, setDescription] = useState("");
@@ -53,7 +58,12 @@ export function ReportDialog({ entityType, entityId, triggerClassName, triggerTe
     setIsSubmitting(true);
     setError(null);
 
-    const result = await submitReport(entityType, entityId, reason, description);
+    const result = await submitReport(
+      entityType,
+      entityId,
+      reason,
+      description,
+    );
 
     if (result.success) {
       setSuccess(true);
@@ -75,9 +85,12 @@ export function ReportDialog({ entityType, entityId, triggerClassName, triggerTe
 
   return (
     <>
-      <button 
+      <button
         onClick={() => setIsOpen(true)}
-        className={triggerClassName || "text-foreground-subtle hover:text-red-600 transition-colors flex items-center gap-1.5 text-sm font-medium"}
+        className={
+          triggerClassName ||
+          "text-foreground-subtle hover:text-red-600 transition-colors flex items-center gap-1.5 text-sm font-medium"
+        }
       >
         <Flag className="w-4 h-4" />
         <span>{triggerText}</span>
@@ -90,7 +103,9 @@ export function ReportDialog({ entityType, entityId, triggerClassName, triggerTe
               <Flag className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Reportar contenido</h2>
+              <h2 className="text-xl font-bold text-foreground">
+                Reportar contenido
+              </h2>
               <p className="text-sm text-foreground-subtle">
                 Ayúdanos a mantener la comunidad segura
               </p>
@@ -99,8 +114,12 @@ export function ReportDialog({ entityType, entityId, triggerClassName, triggerTe
 
           {success ? (
             <div className="bg-green-50 text-green-700 p-4 rounded-xl border border-green-200 mt-2">
-              <p className="font-medium text-center">¡Gracias por tu reporte!</p>
-              <p className="text-sm text-center mt-1">Nuestro equipo lo revisará lo antes posible.</p>
+              <p className="font-medium text-center">
+                ¡Gracias por tu reporte!
+              </p>
+              <p className="text-sm text-center mt-1">
+                Nuestro equipo lo revisará lo antes posible.
+              </p>
               <div className="mt-4 flex justify-center">
                 <Button onClick={resetAndClose} variant="outline" size="sm">
                   Cerrar
@@ -121,7 +140,7 @@ export function ReportDialog({ entityType, entityId, triggerClassName, triggerTe
                 </label>
                 <div className="flex flex-col gap-2">
                   {reasons.map((r) => (
-                    <label 
+                    <label
                       key={r.id}
                       className="flex items-center gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-surface-muted transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5"
                     >
@@ -140,7 +159,10 @@ export function ReportDialog({ entityType, entityId, triggerClassName, triggerTe
               </div>
 
               <div className="flex flex-col gap-2 mt-2">
-                <label htmlFor="description" className="text-sm font-medium text-foreground">
+                <label
+                  htmlFor="description"
+                  className="text-sm font-medium text-foreground"
+                >
                   Detalles adicionales (opcional)
                 </label>
                 <textarea
@@ -157,15 +179,15 @@ export function ReportDialog({ entityType, entityId, triggerClassName, triggerTe
               </div>
 
               <div className="flex justify-end gap-3 mt-4">
-                <Button 
-                  type="button" 
-                  variant="ghost" 
+                <Button
+                  type="button"
+                  variant="ghost"
                   onClick={resetAndClose}
                   disabled={isSubmitting}
                 >
                   Cancelar
                 </Button>
-                <Button 
+                <Button
                   type="submit"
                   disabled={isSubmitting}
                   className="bg-red-600 hover:bg-red-700 text-white border-transparent"

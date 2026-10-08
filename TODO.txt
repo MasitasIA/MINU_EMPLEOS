@@ -1,130 +1,71 @@
-# Auditoría Minú Empleos - TODO.txt
+# CRITICAL
 
-[x] [ALTO] Efecto secundario y estado derivado mal implementado
-Categoría: React / Next.js
-Archivo: src/components/job-portal/JobSearchCatalog.tsx
-Línea: 43-50
-Problema: Se llama a `setState` síncronamente dentro de `useEffect` (cascading renders) y se accede a `applyFilters` antes de ser declarada (fuera del scope del efecto, causando dependencias faltantes).
-Impacto: Problemas de performance evidentes (re-renders en cascada) y comportamiento impredecible de filtros al cambiar la URL.
-Solución sugerida: Eliminar el useEffect y utilizar el estado inicial directamente desde searchParams o reescribir la lógica de filtros para que no derive el estado innecesariamente. Envolver `applyFilters` en `useCallback` si es estrictamente necesario el efecto.
+[ ] SEC-001 [P0] Validar que las políticas RLS en todas las tablas (`profiles`, `companies`, `jobs`, `applications`, `reports`, `notifications`) estén completamente configuradas, especialmente debido al fallback hardcodeado del ANON_KEY.
+    Depende de: Ninguna
 
-[ ] [ALTO] Falta revisión manual de dependencias
-Categoría: Configuración
-Archivo: package.json
-Línea: N/A
-Problema: Existen dependencias instaladas, pero hay que comprobar si no faltan estados de empty y disabled en todo el sitio.
-Impacto: Bugs potenciales en formularios.
-Solución sugerida: Auditar cada formulario.
+# HIGH
 
-[x] [ALTO] Ruta inexistente: Recuperar Contraseña
-Categoría: Navegación / Autenticación
-Archivo: src/app/iniciar/page.tsx / src/app/recuperar/page.tsx
-Línea: N/A
-Problema: El enlace de "Olvidé mi contraseña" apunta a `/recuperar` pero la ruta y el flujo de recuperación no existen.
-Impacto: Los usuarios no pueden recuperar el acceso a sus cuentas.
-Solución sugerida: Crear la ruta `app/recuperar-password/page.tsx` y el flujo asociado.
+[x] ARCH-001 [P1] Proteger rutas privadas utilizando `middleware.ts` en lugar de hacerlo exclusivamente en los Server Components, para evitar cargar la página antes de la redirección.
+    Archivo: `src/lib/supabase/middleware.ts` y `src/middleware.ts`
+    Depende de: Ninguna
 
-[x] [ALTO] Ruta inexistente: Eliminar Cuenta
-Categoría: Navegación / UX
-Archivo: src/app/mi-cuenta/eliminar-cuenta/page.tsx
-Línea: N/A
-Problema: El botón de eliminar perfil redirige a una ruta que aún no ha sido implementada.
-Impacto: Promesa de funcionalidad rota y mala experiencia de usuario.
-Solución sugerida: Crear el formulario y la lógica para eliminar la cuenta permanentemente en la ruta correspondiente.
+[ ] PERF-001 [P1] Refactorizar `JobSearchCatalog.tsx` para que el filtrado se haga a nivel de servidor (Server-Side) usando Search Params, evitando enviar miles de empleos al cliente.
+    Archivo: `src/components/job-portal/JobSearchCatalog.tsx` y `src/app/empleos/page.tsx`
+    Depende de: Ninguna
 
-[x] [ALTO] Falta sanitización en descripciones de empleos
-Categoría: Seguridad / Contenido
-Archivo: src/components/job-portal/CreateJobForm.tsx
-Línea: N/A
-Problema: Las descripciones largas de empleos pueden ser vulnerables a inyecciones XSS si no se validan y sanean adecuadamente al ser renderizadas o guardadas.
-Impacto: Posible robo de sesión o ejecución de scripts maliciosos.
-Solución sugerida: Sanitización estricta de inputs (Zod / DOMPurify).
+[ ] SEO-001 [P1] Actualizar la URL dinámicamente (`router.push` o `router.replace`) al usar los filtros en `JobSearchCatalog.tsx` para permitir SEO y links compartibles.
+    Archivo: `src/components/job-portal/JobSearchCatalog.tsx`
+    Depende de: PERF-001
 
-[x] [ALTO] Falta validación y RLS robusto en Supabase
-Categoría: Seguridad / Backend
-Archivo: Base de Datos Supabase
-Línea: N/A
-Problema: Las tablas y buckets deben contar con políticas estrictas de Row Level Security (como se hizo con los CVs).
-Impacto: Usuarios o empresas malintencionadas podrían modificar o acceder a datos ajenos.
-Solución sugerida: Añadir y auditar políticas RLS en todas las tablas (`companies`, `jobs`, `applications`) y en el bucket `PROFILES`.
-*Nota (Sesión actual): Se entregó el script SQL con RLS estricto para privacidad de CVs y edición de ofertas.*
+# MEDIUM
 
-[x] [NUEVO] Lógica de Negocio implementada en esta sesión:
-1. Expiración estricta de Ofertas (max 6 meses).
-2. Anti-Spam (max 5 publicaciones por empresa/día).
-3. Error silencioso de UI para Postulaciones Dobles (Constraint `23505`).
-4. Salario Mínimo se volvió campo OBLIGATORIO en toda la app.
+[ ] SEO-002 [P2] Agregar metadatos globales (`openGraph`, `twitter`) y un template de título en el archivo `layout.tsx` principal.
+    Archivo: `src/app/layout.tsx`
+    Depende de: Ninguna
 
-[x] [MEDIO] Errores de ESLint y tipado genérico
-Categoría: TypeScript / Configuración
-Archivo: Múltiples (ej. JobSearchCatalog.tsx, TopJobs.tsx, auth.ts)
-Línea: Varias
-Problema: Uso excesivo de `any` explícitos y variables declaradas sin uso. Entidades no escapadas en JobActions.tsx.
-Impacto: Dificulta la mantenibilidad, y es un code smell que desactiva las bondades de TypeScript.
-Solución sugerida: Reemplazar `any` por tipos e interfaces específicas o `unknown`. Escapar entidades (usar `&quot;`).
+[ ] ARCH-002 [P2] Dividir componentes grandes como `CompanySettingsForm.tsx` o `EditProfileForm.tsx` en sub-componentes más pequeños y manejables.
+    Archivo: `src/components/job-portal/CompanySettingsForm.tsx`
+    Depende de: Ninguna
 
-[x] [BAJO] Texto incorrecto en página 404
-Categoría: Texto y Contenido
-Archivo: src/app/not-found.tsx
-Línea: 18
-Problema: El texto dice "Puede que el producto o la tienda hayan sido eliminados o movidos." Esto es un remanente de una plantilla de e-commerce.
-Impacto: Confusión para el usuario; da apariencia de falta de profesionalismo.
-Solución sugerida: Cambiar el texto a "Puede que el empleo, empresa o perfil que buscas haya sido eliminado o no exista."
+[ ] SEC-002 [P2] Implementar protección Rate Limiting en los Server Actions más críticos (`createJob`, `applyToJob`, `registerUser`) utilizando Cloudflare u otra estrategia.
+    Archivos: `src/app/actions/*.ts`
+    Depende de: Ninguna
 
-[ ] [BAJO] README.md sin actualizar
-Categoría: Documentación
-Archivo: README.md
-Línea: N/A
-Problema: Tiene el texto por defecto de create-next-app en lugar de las instrucciones de "Minú Empleos".
-Impacto: Dificulta el onboarding de otros desarrolladores.
-Solución sugerida: Escribir instrucciones claras para levantar el entorno local (variables de entorno necesarias, etc).
+# LOW
 
-[x] [MEJORA] Notificaciones de cambio de estado
-Categoría: UX / Notificaciones
-Archivo: N/A
-Línea: N/A
-Problema: El candidato no es notificado cuando su postulación avanza en el proceso.
-Impacto: Incertidumbre en el usuario candidato.
-Solución sugerida: Enviar notificaciones (Emails o In-App) al actualizar el estado de `applications`. (Implementado In-App: nueva tabla `notifications` en Supabase con RLS. Campana en Navbar con badge en vivo. Dispara notificaciones al candidato ante cambios de estado y a la empresa al recibir postulaciones nuevas).
+[ ] CLEAN-001 [P3] Eliminar funciones no implementadas como `recordJobView` si no se van a utilizar a corto plazo.
+    Archivo: `src/app/actions/stats.ts`
+    Depende de: Ninguna
 
-[x] [MEJORA] Sistema de verificación de empresas
-Categoría: UX / Confianza
-Archivo: N/A
-Línea: N/A
-Problema: Todas las empresas lucen igual sin distinción de verificación o confiabilidad oficial.
-Impacto: Menor confianza de los candidatos al postularse a empresas desconocidas.
-Solución sugerida: Implementar un flag `is_verified` visual (un check azul) y lógica de validación interna.
+# DEAD CODE CANDIDATES
 
-[x] [MEJORA] SEO dinámico para ofertas y perfiles
-Categoría: SEO
-Archivo: Rutas dinámicas (`[slug]/page.tsx`, `empresas/[id]/page.tsx`)
-Línea: N/A
-Problema: Falta generación dinámica de meta tags (OG, Title, Description) basadas en los datos de la BD.
-Impacto: Dificultad para indexar y compartir en redes ofertas laborales específicas.
-Solución sugerida: Implementar la función `generateMetadata` nativa de Next.js. (Implementado con Schema.org JSON-LD para JobPosting).
+[ ] Revisar la necesidad real del archivo `stats.ts`.
 
+# DEPENDENCIES
 
+[ ] Todo correcto. `package.json` está limpio.
 
-[x] [ALTO] Implementar Sitemap dinámico y Robots.txt
-Categoría: SEO
-Archivo: `src/app/sitemap.ts` y `src/app/robots.ts`
-Línea: N/A
-Problema: La aplicación carece de un sitemap.xml para indexar las ofertas dinámicas y un robots.txt para bloquear las rutas privadas (login, panel, mi-cuenta).
-Impacto: Visibilidad pobre en buscadores y posible indexación de URLs privadas.
-Solución sugerida: Generar sitemap dinámicamente desde base de datos. (Implementado).
+# SECURITY
 
-[x] [MEDIO] Sistema de Expiración de Ofertas
-Categoría: Lógica de Negocio
-Archivo: Base de Datos / `src/app/actions/jobs.ts` / `src/app/actions/applications.ts` / `src/app/empleos/[id]/page.tsx`
-Línea: N/A
-Problema: Actualmente no existe una estrategia clara de cuándo una oferta vence, permitiendo que ofertas antiguas reciban postulaciones.
-Impacto: Frustración en candidatos y spam para empresas.
-Solución sugerida: Añadir campo `expires_at` y estados (`published`, `closed`, `expired`) en Supabase y ocultar/cerrar ofertas vencidas. (Implementado: filtrado activo por expires_at en catálogo, bloqueo de postulación en frontend y backend, selector de vencimiento con límite máx de 6 meses en formulario e indicador en panel de empresa).
+[ ] Auditar completamente el SQL de Supabase (Editor) para validar que no haya bypasses de RLS.
 
-[x] [MEDIO] Protección contra Spam en Ofertas
-Categoría: Seguridad
-Archivo: `src/app/actions/jobs.ts`
-Línea: N/A
-Problema: No hay un cooldown ni rate limiting en la creación de ofertas por empresa.
-Impacto: Una empresa malintencionada o bot puede inundar la base de datos de spam.
-Solución sugerida: Validar límite de publicaciones por período o implementar rate limiting en el backend. (Implementado: límite estricto de máximo 5 ofertas por día por empresa y validación de propiedad en `createJob`).
+# SEO
+
+[ ] Falta template de título y OpenGraph default en `layout.tsx`.
+[ ] Los filtros de búsqueda no alteran la URL, rompiendo navegación.
+
+# PERFORMANCE
+
+[ ] Componentes de cliente están asumiendo toda la carga de búsqueda (JobSearchCatalog).
+
+# ARCHITECTURE
+
+[x] Falta de middleware para protección de rutas (Completado).
+
+# TESTING
+
+[ ] No hay tests configurados. Se recomienda agregar Vitest o Jest para testear las validaciones (Zod schemas) y los Server Actions (mockeando Supabase).
+
+# REFACTORING
+
+[ ] Dividir formularios masivos en `src/components/job-portal`.
