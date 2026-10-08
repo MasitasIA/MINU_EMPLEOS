@@ -7,6 +7,7 @@ import { recordJobView } from "@/app/actions/stats";
 import { ApplyJobButton } from "@/components/job-portal/ApplyJobButton";
 import { getUser } from "@/lib/session";
 import { hasUserAppliedToJob } from "@/app/actions/applications";
+import { ReportDialog } from "@/components/shared/ReportDialog";
 
 import type { Metadata } from "next";
 
@@ -247,6 +248,10 @@ export default async function JobPage({
                 Debes <Link href="/iniciar" className="text-primary hover:underline">iniciar sesión</Link> y completar tu perfil para postularte.
               </p>
             )}
+
+            <div className="mt-6 pt-4 border-t border-border flex justify-center">
+              <ReportDialog entityType="job" entityId={job.id} />
+            </div>
           </div>
         </div>
       </div>

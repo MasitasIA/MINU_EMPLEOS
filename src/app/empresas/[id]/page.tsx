@@ -14,6 +14,7 @@ import { getCompanyById } from "@/app/actions/companies";
 import { getJobsByCompany } from "@/app/actions/jobs";
 import { getUser } from "@/lib/session";
 import { JobCard } from "@/components/job-portal/JobCard";
+import { ReportDialog } from "@/components/shared/ReportDialog";
 
 export default async function CompanyPage({
   params,
@@ -214,6 +215,10 @@ export default async function CompanyPage({
               {company.address ? `${company.address}, ` : ""}
               {company.localities?.ciudad || "Ubicación no especificada"}
             </p>
+          </div>
+
+          <div className="flex justify-center mb-6">
+            <ReportDialog entityType="company" entityId={company.id} />
           </div>
         </div>
 

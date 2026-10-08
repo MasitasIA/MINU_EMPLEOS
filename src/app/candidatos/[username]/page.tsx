@@ -4,6 +4,7 @@ import { getUser } from "@/lib/session";
 import Image from "next/image";
 import { UserCircle, ShieldAlert, Phone, FileText, MapPin, Briefcase, Car } from "lucide-react";
 import Link from "next/link";
+import { ReportDialog } from "@/components/shared/ReportDialog";
 
 export default async function CandidateProfilePage({
   params,
@@ -222,6 +223,10 @@ export default async function CandidateProfilePage({
               </a>
             </div>
           )}
+
+          <div className="mt-8 pt-4 border-t border-border flex justify-center">
+            <ReportDialog entityType="profile" entityId={profile.id} />
+          </div>
         </div>
       </div>
     </div>
