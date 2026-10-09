@@ -8,8 +8,23 @@ export const metadata = {
   description: "Encuentra tu próximo trabajo en empresas locales.",
 };
 
-export default async function EmpleosPage() {
-  const jobs = await getAllJobs();
+export default async function EmpleosPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  // Await the searchParams to safely access its properties (Next.js 15+ behavior)
+  const resolvedParams = await searchParams;
+
+  const filters = {
+    q: typeof resolvedParams.q === 'string' ? resolvedParams.q : undefined,
+    category: typeof resolvedParams.category === 'string' ? resolvedParams.category : undefined,
+    locality: typeof resolvedParams.locality === 'string' ? resolvedParams.locality : undefined,
+    job_type: typeof resolvedParams.job_type === 'string' ? resolvedParams.job_type : undefined,
+    modality: typeof resolvedParams.modality === 'string' ? resolvedParams.modality : undefined,
+  };
+
+  const jobs = await getAllJobs(filters);
   const categories = await getAllCategories();
   const localities = await getAllLocalities();
 

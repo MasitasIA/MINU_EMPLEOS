@@ -13,15 +13,34 @@ const sanitizeOptions = {
   }
 };
 
-export async function getAllJobs() {
+interface JobFilters {
+  q?: string;
+  category?: string;
+  locality?: string;
+  job_type?: string;
+  modality?: string;
+}
+
+export async function getAllJobs(filters?: JobFilters) {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase
+    let query = supabase
       .from("jobs")
       .select("*, companies(name, image_url), categories(name), localities(ciudad)")
       .eq("is_active", true)
-      .gte("expires_at", new Date().toISOString())
-      .order("created_at", { ascending: false });
+      .gte("expires_at", new Date().toISOString());
+
+    if (filters) {
+      if (filters.category) query = query.eq("category_id", filters.category);
+      if (filters.locality) query = query.eq("locality_id", filters.locality);
+      if (filters.job_type) query = query.eq("job_type", filters.job_type);
+      if (filters.modality) query = query.eq("modality", filters.modality);
+      if (filters.q) {
+        query = query.ilike("name", `%${filters.q}%`);
+      }
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error obteniendo empleos:", error);

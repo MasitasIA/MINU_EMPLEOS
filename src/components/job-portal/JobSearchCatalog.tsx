@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { JobCard } from "./JobCard";
 import { Search, FilterX } from "lucide-react";
 
@@ -48,53 +48,21 @@ export function JobSearchCatalog({
     searchParams.get("locality") || "",
   );
 
-  const [appliedFilters, setAppliedFilters] = useState({
-    q: searchParams.get("q") || "",
-    type: searchParams.get("job_type") || "",
-    mod: searchParams.get("modality") || "",
-    cat: searchParams.get("category") || "",
-    loc: searchParams.get("locality") || "",
-  });
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const jobs = React.useMemo(() => {
-    let filtered = [...initialJobs];
-    const { q, type, mod, cat, loc } = appliedFilters;
-
-    if (q) {
-      filtered = filtered.filter(
-        (j) =>
-          j.name.toLowerCase().includes(q.toLowerCase()) ||
-          j.companies?.name?.toLowerCase().includes(q.toLowerCase()),
-      );
-    }
-
-    if (type) {
-      filtered = filtered.filter((j) => j.job_type === type);
-    }
-
-    if (mod) {
-      filtered = filtered.filter((j) => j.modality === mod);
-    }
-
-    if (cat) {
-      filtered = filtered.filter((j) => j.category_id === cat);
-    }
-
-    if (loc) {
-      filtered = filtered.filter((j) => j.locality_id === loc);
-    }
-
-    return filtered;
-  }, [initialJobs, appliedFilters]);
+  // Los empleos ya vienen filtrados desde el servidor
+  const jobs = initialJobs;
 
   const handleSearch = () => {
-    setAppliedFilters({
-      q: searchTerm,
-      type: jobTypeFilter,
-      mod: modalityFilter,
-      cat: categoryFilter,
-      loc: localityFilter,
-    });
+    const params = new URLSearchParams();
+    if (searchTerm) params.set("q", searchTerm);
+    if (jobTypeFilter) params.set("job_type", jobTypeFilter);
+    if (modalityFilter) params.set("modality", modalityFilter);
+    if (categoryFilter) params.set("category", categoryFilter);
+    if (localityFilter) params.set("locality", localityFilter);
+
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   const clearFilters = () => {
@@ -103,7 +71,7 @@ export function JobSearchCatalog({
     setModalityFilter("");
     setCategoryFilter("");
     setLocalityFilter("");
-    setAppliedFilters({ q: "", type: "", mod: "", cat: "", loc: "" });
+    router.push(pathname);
   };
 
   return (

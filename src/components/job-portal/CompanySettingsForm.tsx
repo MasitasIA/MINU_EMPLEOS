@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { updateCompany, deleteCompany } from "@/app/actions/companies";
-import { Save, AlertTriangle, ShieldCheck, Trash2, X } from "lucide-react";
+import { updateCompany } from "@/app/actions/companies";
+import { Save, AlertTriangle } from "lucide-react";
 import { ImageUploadCropper } from "./ImageUploadCropper";
+import { VerificationCompanySection } from "./VerificationCompanySection";
+import { DeleteCompanySection } from "./DeleteCompanySection";
 
 interface Category {
   id: string;
@@ -40,12 +40,7 @@ export function CompanySettingsForm({
   categories: Category[];
   localities: { id: string; ciudad: string }[];
 }) {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteInput, setDeleteInput] = useState("");
-  
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const [formData, setFormData] = useState({
@@ -90,21 +85,7 @@ export function CompanySettingsForm({
     setIsLoading(false);
   };
 
-  const handleDelete = async () => {
-    if (deleteInput !== company.id) return;
-    
-    setIsDeleting(true);
-    const response = await deleteCompany(company.id);
-    
-    if (response.success) {
-      router.push("/panel-empresa");
-      router.refresh();
-    } else {
-      setMessage({ type: "error", text: response.error || "Error al eliminar la empresa." });
-      setIsDeleting(false);
-      setShowDeleteModal(false);
-    }
-  };
+
 
   return (
     <div className="space-y-8">
@@ -375,97 +356,8 @@ export function CompanySettingsForm({
         </div>
       </form>
 
-      {/* Sección de Verificación */}
-      <div className="radius-predefined bg-white shadow-sm ring-1 ring-border p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-            Estado de Verificación
-            {company.is_verified && <ShieldCheck className="h-5 w-5 text-primary" />}
-          </h3>
-          <p className="mt-1 text-sm text-foreground-muted">
-            {company.is_verified 
-              ? "Tu empresa ya está verificada y tiene la insignia oficial." 
-              : "La insignia de verificación transmite confianza a los candidatos."}
-          </p>
-        </div>
-        {!company.is_verified && (
-          <Link 
-            href="/panel-empresa/verificacion"
-            className="inline-block radius-button bg-secondary/10 text-secondary hover:bg-secondary/20 px-6 py-2.5 text-sm font-bold transition-colors whitespace-nowrap"
-          >
-            Solicitar Verificación
-          </Link>
-        )}
-      </div>
-
-      {/* Danger Zone */}
-      <div className="radius-predefined bg-red-50 ring-1 ring-red-200 p-6 sm:p-8">
-        <h3 className="text-lg font-bold text-red-800">Zona de Peligro</h3>
-        <p className="mt-1 text-sm text-red-600 mb-4">
-          Una vez que elimines tu perfil de empresa, no hay vuelta atrás y perderás todas tus ofertas de empleo.
-        </p>
-        <button
-          type="button"
-          onClick={() => setShowDeleteModal(true)}
-          className="radius-button bg-red-600 text-white hover:bg-red-700 px-6 py-2.5 text-sm font-bold transition-colors inline-flex items-center gap-2 shadow-sm"
-        >
-          <Trash2 className="h-4 w-4" /> Eliminar Empresa
-        </button>
-      </div>
-
-      {/* Modal de Eliminación */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md bg-white radius-predefined shadow-2xl p-6 relative animate-in fade-in zoom-in-95 duration-200">
-            <button 
-              onClick={() => setShowDeleteModal(false)}
-              className="absolute top-4 right-4 text-foreground-muted hover:text-foreground"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            
-            <div className="flex items-center gap-3 text-red-600 mb-4">
-              <AlertTriangle className="h-6 w-6" />
-              <h2 className="text-xl font-bold">¿Eliminar empresa?</h2>
-            </div>
-            
-            <p className="text-sm text-foreground-muted mb-4">
-              Esta acción <strong>eliminará permanentemente</strong> tu perfil de empresa y todas las ofertas asociadas.
-            </p>
-            
-            <div className="mb-6">
-              <label className="block text-sm font-bold text-foreground mb-2">
-                Para confirmar, escribe <span className="font-mono bg-surface-muted px-1 py-0.5 radius-predefined text-red-600">{company.id}</span> a continuación:
-              </label>
-              <input
-                type="text"
-                value={deleteInput}
-                onChange={(e) => setDeleteInput(e.target.value)}
-                className="w-full radius-predefined border border-border bg-surface-muted px-3 py-2 text-sm outline-none focus:border-red-500 focus:bg-white focus:ring-2 focus:ring-red-500/20"
-                placeholder={company.id}
-              />
-            </div>
-            
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 text-sm font-bold text-foreground-muted hover:bg-surface-muted radius-button transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={deleteInput !== company.id || isDeleting}
-                className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 radius-button transition-colors flex items-center gap-2"
-              >
-                {isDeleting ? "Eliminando..." : "Sí, eliminar empresa"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <VerificationCompanySection isVerified={!!company.is_verified} />
+      <DeleteCompanySection companyId={company.id} />
 
     </div>
   );

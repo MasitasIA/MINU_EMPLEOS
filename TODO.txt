@@ -9,11 +9,11 @@
     Archivo: `src/lib/supabase/middleware.ts` y `src/middleware.ts`
     Depende de: Ninguna
 
-[ ] PERF-001 [P1] Refactorizar `JobSearchCatalog.tsx` para que el filtrado se haga a nivel de servidor (Server-Side) usando Search Params, evitando enviar miles de empleos al cliente.
+[x] PERF-001 [P1] Refactorizar `JobSearchCatalog.tsx` para que el filtrado se haga a nivel de servidor (Server-Side) usando Search Params, evitando enviar miles de empleos al cliente.
     Archivo: `src/components/job-portal/JobSearchCatalog.tsx` y `src/app/empleos/page.tsx`
     Depende de: Ninguna
 
-[ ] SEO-001 [P1] Actualizar la URL dinámicamente (`router.push` o `router.replace`) al usar los filtros en `JobSearchCatalog.tsx` para permitir SEO y links compartibles.
+[x] SEO-001 [P1] Actualizar la URL dinámicamente (`router.push` o `router.replace`) al usar los filtros en `JobSearchCatalog.tsx` para permitir SEO y links compartibles.
     Archivo: `src/components/job-portal/JobSearchCatalog.tsx`
     Depende de: PERF-001
 
@@ -23,7 +23,7 @@
     Archivo: `src/app/layout.tsx`
     Depende de: Ninguna
 
-[ ] ARCH-002 [P2] Dividir componentes grandes como `CompanySettingsForm.tsx` o `EditProfileForm.tsx` en sub-componentes más pequeños y manejables.
+[x] ARCH-002 [P2] Dividir componentes grandes como `CompanySettingsForm.tsx` o `EditProfileForm.tsx` en sub-componentes más pequeños y manejables. (Completado)
     Archivo: `src/components/job-portal/CompanySettingsForm.tsx`
     Depende de: Ninguna
 
@@ -50,13 +50,11 @@
 [ ] Auditar completamente el SQL de Supabase (Editor) para validar que no haya bypasses de RLS.
 
 # SEO
-
-[ ] Falta template de título y OpenGraph default en `layout.tsx`.
-[ ] Los filtros de búsqueda no alteran la URL, rompiendo navegación.
+[x] Falta template de título y OpenGraph default en `layout.tsx`.
+[x] Los filtros de búsqueda no alteran la URL, rompiendo navegación. (Completado)
 
 # PERFORMANCE
-
-[ ] Componentes de cliente están asumiendo toda la carga de búsqueda (JobSearchCatalog).
+[x] Componentes de cliente están asumiendo toda la carga de búsqueda (JobSearchCatalog). (Completado)
 
 # ARCHITECTURE
 

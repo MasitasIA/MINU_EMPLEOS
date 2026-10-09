@@ -23,9 +23,26 @@ const geistMono = Geist_Mono({
 
 // Metadatos para SEO
 export const metadata: Metadata = {
-  title: "Minú Empleos",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://minuempleos.com.ar'),
+  title: {
+    default: "Minú Empleos | Tu portal de trabajo en Guaminí",
+    template: "%s | Minú Empleos",
+  },
   description:
-    "Portal local para la disponibilidad de empleos en pequeños negocios, asentado en la localidad de Guaminí y los alrededores",
+    "Portal local para la búsqueda de empleos y publicación de vacantes en pequeños negocios, asentado en la localidad de Guaminí y los alrededores.",
+  openGraph: {
+    title: "Minú Empleos | Guaminí",
+    description: "Encuentra tu próximo trabajo en empresas locales.",
+    url: "/",
+    siteName: "Minú Empleos",
+    locale: "es_AR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Minú Empleos | Guaminí",
+    description: "Portal local para la disponibilidad de empleos en pequeños negocios, asentado en la localidad de Guaminí.",
+  },
 };
 
 // Layout
