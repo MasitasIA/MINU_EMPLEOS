@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '@/lib/supabase/config';
 
 export const revalidate = 3600; // Revalidar el sitemap cada hora (ISR)
 
@@ -47,12 +48,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // Comprobar si las variables de entorno están disponibles en tiempo de build o ejecución
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cfwhoovpxhzjojstxrgx.supabase.co';
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmd2hvb3ZweGh6am9qc3R4cmd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1NDYyMDQsImV4cCI6MjEwNDEyMjIwNH0.MLdDSwQJY6pFQCcYpehot9bSNFc8uj7Oswyiguz2Lv0';
+  const supabaseUrl = SUPABASE_URL;
+  const supabaseKey = SUPABASE_PUBLISHABLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
     console.warn(
-      'Aviso en Sitemap: NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY no están definidos. Generando únicamente rutas estáticas.'
+      'Aviso en Sitemap: NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY no están definidos. Generando únicamente rutas estáticas.'
     );
     return staticRoutes;
   }

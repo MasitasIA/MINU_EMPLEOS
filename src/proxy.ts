@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '@/lib/supabase/config'
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -10,8 +11,8 @@ export async function proxy(request: NextRequest) {
     !pathname.startsWith('/_next')
   ) {
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      const supabaseUrl = SUPABASE_URL;
+      const supabaseKey = SUPABASE_PUBLISHABLE_KEY;
       
       if (supabaseUrl && supabaseKey) {
         const res = await fetch(`${supabaseUrl}/rest/v1/site_settings?select=maintenance_mode&limit=1`, {

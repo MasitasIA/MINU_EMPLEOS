@@ -20,7 +20,7 @@
 
 ## IMPORTANT CONSTRAINTS
 - **Deployment en Cloudflare:** No se pueden utilizar APIs de Node.js nativas o archivos físicos complejos (como `wrangler.jsonc` automático) sin causar conflictos en el build. Se prefiere configuración mediante dashboard.
-- **Supabase Keys:** La `NEXT_PUBLIC_SUPABASE_ANON_KEY` está hardcodeada como fallback en los clientes debido a inestabilidad de variables de entorno de Cloudflare durante algunos builds. Esto **exige** que las políticas RLS de Supabase sean perfectas.
+- **Supabase Keys:** La `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` está hardcodeada como fallback en los clientes debido a inestabilidad de variables de entorno de Cloudflare durante algunos builds. Esto **exige** que las políticas RLS de Supabase sean perfectas.
 - **Service Role:** No se utiliza `service_role` en el cliente ni en Server Actions (por seguridad), obligando a depender de RPCs (ej. `delete_user`) o RLS estricto para operaciones complejas de admin.
 
 ## KNOWN ISSUES (Resultados de Auditoría)
@@ -33,7 +33,7 @@
 - **Protección de Rutas:** Se realiza en los Server Components (ej. `if (!user) redirect()`). El `middleware.ts` no protege rutas actualmente.
 - **IDOR Protegido:** Las acciones como `updateJob`, `deleteJob` y `toggleJobStatus` validan correctamente en el backend que `company.owner_id === user.id`.
 - **Storage Seguro:** Los CVs (`RESUMES`) se manejan mediante Signed URLs, lo cual es correcto.
-- **Alerta RLS:** Dado que la ANON KEY está hardcodeada como fallback, **todas las tablas deben tener RLS estricto**. Si falta una política de SELECT o UPDATE, cualquier usuario malicioso puede modificar la DB desde su consola.
+- **Alerta RLS:** Dado que la PUBLISHABLE KEY está hardcodeada como fallback, **todas las tablas deben tener RLS estricto**. Si falta una política de SELECT o UPDATE, cualquier usuario malicioso puede modificar la DB desde su consola.
 
 ## SEO NOTES
 - Bien estructurado con `sitemap.ts` y `robots.ts`.
@@ -50,7 +50,7 @@
 - Componentes masivos que necesitan dividirse (ej. `CompanySettingsForm.tsx` con 19KB).
 
 ## DECISIONS
-- **Hardcode de Anon Key:** Aceptado temporalmente por conflictos con Cloudflare Pages.
+- **Hardcode de PUBLISHABLE KEY:** Aceptado temporalmente por conflictos con Cloudflare Pages.
 - **Sin Eliminar Cuentas Auth Directamente:** Supabase no permite borrar `auth.users` desde el cliente sin admin privileges. Se creó una RPC `delete_user` en la DB como solución (o borrado lógico).
 - **Reportes:** Se implementó `reports` con Server Actions, RLS, e interfaz para Job, Company, Profile.
 

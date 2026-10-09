@@ -1,6 +1,6 @@
 # CRITICAL
 
-[ ] SEC-001 [P0] Validar que las políticas RLS en todas las tablas (`profiles`, `companies`, `jobs`, `applications`, `reports`, `notifications`) estén completamente configuradas, especialmente debido al fallback hardcodeado del ANON_KEY.
+[ ] SEC-001 [P0] Validar que las políticas RLS en todas las tablas (`profiles`, `companies`, `jobs`, `applications`, `reports`, `notifications`) estén completamente configuradas, especialmente debido al fallback hardcodeado del PUBLISHABLE_KEY.
     Depende de: Ninguna
 
 # HIGH
