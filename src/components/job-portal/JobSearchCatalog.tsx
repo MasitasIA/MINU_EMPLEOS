@@ -23,14 +23,16 @@ interface Job {
 
 interface JobSearchCatalogProps {
   initialJobs: Job[];
-  categories: { id: string; name: string }[];
-  localities: { id: string; ciudad: string }[];
+  categories: { id: string; name: string; slug: string }[];
+  localities: { id: string; ciudad: string; slug: string }[];
+  facetsData: any[];
 }
 
 export function JobSearchCatalog({
   initialJobs,
   categories,
   localities,
+  facetsData,
 }: JobSearchCatalogProps) {
   const searchParams = useSearchParams();
 
@@ -53,6 +55,49 @@ export function JobSearchCatalog({
 
   // Los empleos ya vienen filtrados desde el servidor
   const jobs = initialJobs;
+
+  // Traducir los slugs (que vienen de la URL) a IDs para calcular los facetas
+  const categoryFilterId = React.useMemo(
+    () => categories.find((c) => c.slug === categoryFilter)?.id,
+    [categories, categoryFilter]
+  );
+  const localityFilterId = React.useMemo(
+    () => localities.find((l) => l.slug === localityFilter)?.id,
+    [localities, localityFilter]
+  );
+
+  // Calculamos los contadores dinámicamente en tiempo real
+  const counts = React.useMemo(() => {
+    const newCounts = {
+      categories: {} as Record<string, number>,
+      localities: {} as Record<string, number>,
+      jobTypes: {} as Record<string, number>,
+      modalities: {} as Record<string, number>,
+    };
+
+    facetsData.forEach((job) => {
+      const matchQ = !searchTerm || job.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchCat = !categoryFilterId || job.category_id === categoryFilterId;
+      const matchLoc = !localityFilterId || job.locality_id === localityFilterId;
+      const matchType = !jobTypeFilter || job.job_type === jobTypeFilter;
+      const matchMod = !modalityFilter || job.modality === modalityFilter;
+
+      if (matchQ && matchLoc && matchType && matchMod) {
+        if (job.category_id) newCounts.categories[job.category_id] = (newCounts.categories[job.category_id] || 0) + 1;
+      }
+      if (matchQ && matchCat && matchType && matchMod) {
+        if (job.locality_id) newCounts.localities[job.locality_id] = (newCounts.localities[job.locality_id] || 0) + 1;
+      }
+      if (matchQ && matchCat && matchLoc && matchMod) {
+        if (job.job_type) newCounts.jobTypes[job.job_type] = (newCounts.jobTypes[job.job_type] || 0) + 1;
+      }
+      if (matchQ && matchCat && matchLoc && matchType) {
+        if (job.modality) newCounts.modalities[job.modality] = (newCounts.modalities[job.modality] || 0) + 1;
+      }
+    });
+
+    return newCounts;
+  }, [facetsData, searchTerm, categoryFilterId, localityFilterId, jobTypeFilter, modalityFilter]);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -111,9 +156,11 @@ export function JobSearchCatalog({
                   className="w-full radius-predefined border border-border bg-surface-muted py-2 px-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white transition-colors"
                 >
                   <option value="">Todas las categorías</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
+                  {categories
+                    .filter((cat) => counts.categories[cat.id] > 0)
+                    .map((cat) => (
+                    <option key={cat.id} value={cat.slug}>
+                      {cat.name} ({counts.categories[cat.id]})
                     </option>
                   ))}
                 </select>
@@ -129,9 +176,11 @@ export function JobSearchCatalog({
                   className="w-full radius-predefined border border-border bg-surface-muted py-2 px-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white transition-colors"
                 >
                   <option value="">Cualquier ubicación</option>
-                  {localities.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.ciudad}
+                  {localities
+                    .filter((loc) => counts.localities[loc.id] > 0)
+                    .map((loc) => (
+                    <option key={loc.id} value={loc.slug}>
+                      {loc.ciudad} ({counts.localities[loc.id]})
                     </option>
                   ))}
                 </select>
@@ -147,9 +196,13 @@ export function JobSearchCatalog({
                   className="w-full radius-predefined border border-border bg-surface-muted py-2 px-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white transition-colors"
                 >
                   <option value="">Todas</option>
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Freelance">Freelance</option>
+                  {["Full-time", "Part-time", "Freelance"]
+                    .filter(type => counts.jobTypes[type] > 0)
+                    .map(type => (
+                      <option key={type} value={type}>
+                        {type} ({counts.jobTypes[type]})
+                      </option>
+                  ))}
                 </select>
               </div>
 
@@ -163,9 +216,13 @@ export function JobSearchCatalog({
                   className="w-full radius-predefined border border-border bg-surface-muted py-2 px-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white transition-colors"
                 >
                   <option value="">Todas</option>
-                  <option value="Presencial">Presencial</option>
-                  <option value="Híbrido">Híbrido</option>
-                  <option value="Remoto">Remoto</option>
+                  {["Presencial", "Híbrido", "Remoto"]
+                    .filter(mod => counts.modalities[mod] > 0)
+                    .map(mod => (
+                      <option key={mod} value={mod}>
+                        {mod} ({counts.modalities[mod]})
+                      </option>
+                  ))}
                 </select>
               </div>
 

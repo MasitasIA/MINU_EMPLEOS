@@ -1,19 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, MapPin } from "lucide-react";
 
 interface HeroSearchProps {
-  categories: { id: string; name: string }[];
+  categories: { id: string; name: string; slug: string }[];
   localities: { id: string; ciudad: string; slug: string }[];
+  facetsData: any[];
 }
 
-export function HeroSearch({ categories, localities }: HeroSearchProps) {
+export function HeroSearch({ categories, localities, facetsData }: HeroSearchProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [locality, setLocality] = useState("");
+
+  const categoryFilterId = React.useMemo(
+    () => categories.find((c) => c.slug === category)?.id,
+    [categories, category]
+  );
+  const localityFilterId = React.useMemo(
+    () => localities.find((l) => l.slug === locality)?.id,
+    [localities, locality]
+  );
+
+  const counts = React.useMemo(() => {
+    const newCounts = {
+      categories: {} as Record<string, number>,
+      localities: {} as Record<string, number>,
+    };
+
+    facetsData.forEach((job) => {
+      const matchQ = !search || job.name.toLowerCase().includes(search.toLowerCase());
+      const matchCat = !categoryFilterId || job.category_id === categoryFilterId;
+      const matchLoc = !localityFilterId || job.locality_id === localityFilterId;
+
+      if (matchQ && matchLoc) {
+        if (job.category_id) newCounts.categories[job.category_id] = (newCounts.categories[job.category_id] || 0) + 1;
+      }
+      if (matchQ && matchCat) {
+        if (job.locality_id) newCounts.localities[job.locality_id] = (newCounts.localities[job.locality_id] || 0) + 1;
+      }
+    });
+
+    return newCounts;
+  }, [facetsData, search, categoryFilterId, localityFilterId]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,8 +83,10 @@ export function HeroSearch({ categories, localities }: HeroSearchProps) {
             className="h-12 w-full appearance-none radius-predefined bg-surface-muted pl-10 pr-8 text-foreground outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 text-sm"
           >
             <option value="">Todas las categorías</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
+            {categories
+              .filter((cat) => counts.categories[cat.id] > 0)
+              .map((cat) => (
+              <option key={cat.id} value={cat.slug}>
                 {cat.name}
               </option>
             ))}
@@ -69,8 +103,10 @@ export function HeroSearch({ categories, localities }: HeroSearchProps) {
             className="h-12 w-full appearance-none radius-predefined bg-surface-muted pl-10 pr-8 text-foreground outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 text-sm"
           >
             <option value="">Todas las zonas</option>
-            {localities.map((loc) => (
-              <option key={loc.id} value={loc.id}>
+            {localities
+              .filter((loc) => counts.localities[loc.id] > 0)
+              .map((loc) => (
+              <option key={loc.id} value={loc.slug}>
                 {loc.ciudad}
               </option>
             ))}

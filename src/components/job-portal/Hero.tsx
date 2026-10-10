@@ -4,6 +4,7 @@ import {
   getAllCategories,
 } from "@/app/actions/categories";
 import { getAllLocalities } from "@/app/actions/localities";
+import { getJobsForFacets } from "@/app/actions/jobs";
 import { HeroSearch } from "./HeroSearch";
 import Link from "next/link";
 
@@ -11,6 +12,7 @@ export async function Hero() {
   const popularCategories = await getPopularCategories(5);
   const allCategories = await getAllCategories();
   const localities = await getAllLocalities();
+  const facetsData = await getJobsForFacets();
 
   return (
     <section className="relative overflow-hidden bg-background py-20 lg:py-32">
@@ -36,7 +38,7 @@ export async function Hero() {
         </div>
 
         {/* Buscador integrado en Hero */}
-        <HeroSearch categories={allCategories} localities={localities} />
+        <HeroSearch categories={allCategories} localities={localities} facetsData={facetsData} />
 
         {/* Categorías */}
         {popularCategories.length > 0 && (
@@ -45,7 +47,7 @@ export async function Hero() {
             {popularCategories.map((cat) => (
               <Link
                 key={cat.id}
-                href={`/empleos?category=${cat.id}`}
+                href={`/empleos?category=${cat.slug}`}
                 className="radius-button bg-white px-4 py-1.5 text-foreground-muted shadow-sm ring-1 ring-border transition-all hover:text-primary hover:ring-primary/30 flex items-center gap-2"
               >
                 {cat.icon ? (
