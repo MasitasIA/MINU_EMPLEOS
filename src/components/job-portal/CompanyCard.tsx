@@ -35,6 +35,7 @@ export function CompanyCard({
             alt={`Portada de ${name}`}
             fill
             sizes="(max-width: 768px) 100vw, 33vw"
+            unoptimized
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
         )}
@@ -57,6 +58,7 @@ export function CompanyCard({
               alt={name}
               fill
               sizes="80px"
+              unoptimized
               className="object-cover"
             />
           ) : (

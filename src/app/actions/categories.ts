@@ -1,57 +1,68 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
 
-export async function getAllCategories() {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("categories")
-      .select("*")
-      .order("name", { ascending: true });
+/**
+ * Consulta cacheada de categorías (1 hora de revalidación).
+ * Utiliza cliente público para no interactuar con cookies ni sesión de usuario.
+ */
+export const getAllCategories = unstable_cache(
+  async () => {
+    try {
+      const supabase = createPublicClient();
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, name, slug, icon")
+        .order("name", { ascending: true });
 
-    if (error) {
-      console.error("Error obteniendo categorías:", error);
+      if (error) {
+        console.error("Error obteniendo categorías:", error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error("Error inesperado en getAllCategories:", error);
       return [];
     }
+  },
+  ["all-categories-v1"],
+  { revalidate: 3600, tags: ["categories"] }
+);
 
-    return data || [];
-  } catch (error) {
-    console.error("Error inesperado en getAllCategories:", error);
-    return [];
-  }
-}
-
-export async function getPopularCategories(limit: number = 5) {
-  try {
-    const supabase = await createClient();
-    
-    // Obtenemos categorías y la cuenta de empleos asociados
-    // Esto asume que hay una relación de clave foránea entre categories y jobs
-    const { data, error } = await supabase
-      .from("categories")
-      .select("*, jobs(count)");
+/**
+ * Consulta cacheada de categorías populares (1 hora de revalidación).
+ */
+export const getPopularCategories = unstable_cache(
+  async (limit: number = 5) => {
+    try {
+      const supabase = createPublicClient();
       
-    if (error) {
-      console.error("Error obteniendo categorías populares:", error);
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, name, slug, icon, jobs(count)");
+        
+      if (error) {
+        console.error("Error obteniendo categorías populares:", error);
+        return [];
+      }
+      
+      const categoriesWithCount = (data || []).map((cat: any) => ({
+        ...cat,
+        jobCount: cat.jobs && cat.jobs[0] ? cat.jobs[0].count : 0
+      }));
+      
+      const categoriesWithJobs = categoriesWithCount.filter(cat => cat.jobCount > 0);
+      categoriesWithJobs.sort((a, b) => b.jobCount - a.jobCount);
+      
+      return categoriesWithJobs.slice(0, limit);
+    } catch (error) {
+      console.error("Error inesperado en getPopularCategories:", error);
       return [];
     }
-    
-    // Si la DB soporta count con select, 'jobs' será un array con un objeto [{count: X}]
-    const categoriesWithCount = (data || []).map((cat: any) => ({
-      ...cat,
-      jobCount: cat.jobs && cat.jobs[0] ? cat.jobs[0].count : 0
-    }));
-    
-    // Filtramos las que no tienen empleos
-    const categoriesWithJobs = categoriesWithCount.filter(cat => cat.jobCount > 0);
-    
-    // Ordenamos en memoria (asumiendo que no hay miles de categorías)
-    categoriesWithJobs.sort((a, b) => b.jobCount - a.jobCount);
-    
-    return categoriesWithJobs.slice(0, limit);
-  } catch (error) {
-    console.error("Error inesperado en getPopularCategories:", error);
-    return [];
-  }
-}
+  },
+  ["popular-categories-v1"],
+  { revalidate: 3600, tags: ["categories"] }
+);
+

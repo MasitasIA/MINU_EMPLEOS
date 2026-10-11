@@ -13,11 +13,13 @@ export default async function EmpleosPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  // Await the searchParams to safely access its properties (Next.js 15+ behavior)
-  const resolvedParams = await searchParams;
-
-  const categories = await getAllCategories();
-  const localities = await getAllLocalities();
+  // Ejecutamos la resolución de parámetros y las consultas cacheadas en paralelo
+  const [resolvedParams, categories, localities, facetsData] = await Promise.all([
+    searchParams,
+    getAllCategories(),
+    getAllLocalities(),
+    getJobsForFacets(),
+  ]);
 
   const catSlug = typeof resolvedParams.category === "string" ? resolvedParams.category : undefined;
   const locSlug = typeof resolvedParams.locality === "string" ? resolvedParams.locality : undefined;
@@ -40,7 +42,6 @@ export default async function EmpleosPage({
   };
 
   const jobs = await getAllJobs(filters);
-  const facetsData = await getJobsForFacets();
 
   return (
     <main>

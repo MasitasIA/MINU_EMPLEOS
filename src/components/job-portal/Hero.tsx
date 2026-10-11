@@ -9,10 +9,13 @@ import { HeroSearch } from "./HeroSearch";
 import Link from "next/link";
 
 export async function Hero() {
-  const popularCategories = await getPopularCategories(5);
-  const allCategories = await getAllCategories();
-  const localities = await getAllLocalities();
-  const facetsData = await getJobsForFacets();
+  const [popularCategories, allCategories, localities, facetsData] =
+    await Promise.all([
+      getPopularCategories(5),
+      getAllCategories(),
+      getAllLocalities(),
+      getJobsForFacets(),
+    ]);
 
   return (
     <section className="relative overflow-hidden bg-background py-20 lg:py-32">

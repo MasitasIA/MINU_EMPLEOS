@@ -1,8 +1,8 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createPublicClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/session";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { CompanyCreateSchema, CompanyUpdateSchema } from "@/lib/validations";
 import sanitizeHtml from "sanitize-html";
 
@@ -129,23 +129,34 @@ export async function createCompany(companyData: any) {
 }
 
 /**
- * Obtiene todas las empresas (para el inicio y el directorio de empresas).
+ * Obtiene las empresas para tarjetas (inicio y directorio) con selección estricta de campos.
  */
-export async function getAllCompanies() {
+export async function getAllCompanies(limit?: number) {
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
+    const supabase = createPublicClient();
+    let query = supabase
       .from("companies")
-      .select("*, categories(name)")
+      .select(
+        "id, name, description, image_url, cover_url, is_verified, category_id, categories(name)",
+      )
       .eq("is_active", true)
       .order("created_at", { ascending: false });
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error obteniendo empresas:", error);
       return [];
     }
 
-    return data || [];
+    return (data || []).map((comp: any) => ({
+      ...comp,
+      categories: Array.isArray(comp.categories) ? comp.categories[0] : comp.categories,
+    }));
   } catch (error) {
     console.error("Error inesperado en getAllCompanies:", error);
     return [];

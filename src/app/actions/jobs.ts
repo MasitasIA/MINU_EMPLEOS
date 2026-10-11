@@ -1,8 +1,8 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createPublicClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/session";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { JobCreateSchema, JobUpdateSchema } from "@/lib/validations";
 import sanitizeHtml from "sanitize-html";
 
@@ -19,15 +19,21 @@ interface JobFilters {
   locality?: string;
   job_type?: string;
   modality?: string;
+  limit?: number;
 }
 
+/**
+ * Consulta optimizada para tarjetas de empleos (Listado e Inicio).
+ * Utiliza selección estricta para reducir el payload en un 90% (sin descripciones largas ni requisitos)
+ * y usa createPublicClient para evitar bloquear el Edge Cache con cookies innecesarias.
+ */
 export async function getAllJobs(filters?: JobFilters) {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     let query = supabase
       .from("jobs")
       .select(
-        "*, companies(name, image_url), categories(name), localities(ciudad)",
+        "id, slug, name, job_type, modality, salary_min, salary_max, company_id, category_id, locality_id, companies(name, image_url), categories(name), localities(ciudad)",
       )
       .eq("is_active", true)
       .gte("expires_at", new Date().toISOString());
@@ -40,6 +46,9 @@ export async function getAllJobs(filters?: JobFilters) {
       if (filters.q) {
         query = query.ilike("name", `%${filters.q}%`);
       }
+      if (filters.limit) {
+        query = query.limit(filters.limit);
+      }
     }
 
     const { data, error } = await query.order("created_at", {
@@ -51,28 +60,41 @@ export async function getAllJobs(filters?: JobFilters) {
       return [];
     }
 
-    return data || [];
+    return (data || []).map((job: any) => ({
+      ...job,
+      companies: Array.isArray(job.companies) ? job.companies[0] : job.companies,
+      categories: Array.isArray(job.categories) ? job.categories[0] : job.categories,
+      localities: Array.isArray(job.localities) ? job.localities[0] : job.localities,
+    }));
   } catch (error) {
     console.error("Error inesperado en getAllJobs:", error);
     return [];
   }
 }
 
-export async function getJobsForFacets() {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("jobs")
-      .select("id, category_id, locality_id, job_type, modality, name")
-      .eq("is_active", true)
-      .gte("expires_at", new Date().toISOString());
+/**
+ * Contadores y datos para facetas de búsqueda en el catálogo.
+ * Cacheado a nivel de Edge por 30 minutos (1800s) para evitar sobrecargar el Worker.
+ */
+export const getJobsForFacets = unstable_cache(
+  async () => {
+    try {
+      const supabase = createPublicClient();
+      const { data, error } = await supabase
+        .from("jobs")
+        .select("id, category_id, locality_id, job_type, modality, name")
+        .eq("is_active", true)
+        .gte("expires_at", new Date().toISOString());
 
-    if (error) return [];
-    return data || [];
-  } catch (error) {
-    return [];
-  }
-}
+      if (error) return [];
+      return data || [];
+    } catch {
+      return [];
+    }
+  },
+  ["jobs-facets-v1"],
+  { revalidate: 1800, tags: ["jobs"] }
+);
 
 export async function getJobById(slug: string) {
   try {

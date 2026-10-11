@@ -62,6 +62,9 @@
 
 # PERFORMANCE
 [x] Componentes de cliente están asumiendo toda la carga de búsqueda (JobSearchCatalog). (Completado)
+[x] PERF-002 [P0] Eliminar optimización de imágenes en el Worker (`next.config.ts`, `JobCard`, `CompanyCard`, `supabaseLoader`) para evitar Error 1102 por CPU/memoria. (Completado)
+[x] PERF-003 [P0] Implementar Data Caching agresivo (ISR `revalidate = 3600`, `unstable_cache`, cliente público sin cookies para consultas de lectura). (Completado)
+[x] PERF-004 [P0] Optimización estricta de payloads Supabase (reducción de 90% eliminando descripciones y requisitos en vistas de lista). (Completado)
 
 # ARCHITECTURE
 

@@ -47,6 +47,7 @@ export function JobCard({
                  alt={companyName}
                  fill
                  sizes="48px"
+                 unoptimized
                  className="object-cover"
                />
             ) : (
