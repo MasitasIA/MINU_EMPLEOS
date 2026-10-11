@@ -1,10 +1,17 @@
 "use server";
 
-// Importaciones
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 import { CompanyCreateSchema, CompanyUpdateSchema } from "@/lib/validations";
+import sanitizeHtml from "sanitize-html";
+
+const sanitizeOptions = {
+  allowedTags: ["b", "i", "em", "strong", "a", "p", "br", "ul", "ol", "li"],
+  allowedAttributes: {
+    a: ["href", "target", "rel"],
+  },
+};
 
 // Función auxiliar para generar el slug (ID de la empresa) a partir del nombre
 function generateSlug(name: string): string {
@@ -81,12 +88,20 @@ export async function createCompany(companyData: any) {
       slug = `${slug}-${Math.floor(Math.random() * 10000)}`;
     }
 
+    const sanitizedDescription = sanitizeHtml(
+      parsedData.data.description,
+      sanitizeOptions,
+    );
+    const sanitizedDetailed = parsedData.data.detailed_description
+      ? sanitizeHtml(parsedData.data.detailed_description, sanitizeOptions)
+      : null;
+
     const { error: insertError } = await supabase.from("companies").insert({
       id: slug,
       name: parsedData.data.name,
       owner_id: user.id,
-      description: parsedData.data.description,
-      detailed_description: parsedData.data.detailed_description || null,
+      description: sanitizedDescription,
+      detailed_description: sanitizedDetailed,
       locality_id: parsedData.data.locality_id,
       address: parsedData.data.address || null,
       phone: parsedData.data.phone || null,
@@ -208,13 +223,21 @@ export async function updateCompany(oldSlug: string, companyData: any) {
       }
     }
 
+    const sanitizedDescription = sanitizeHtml(
+      parsedData.data.description,
+      sanitizeOptions,
+    );
+    const sanitizedDetailed = parsedData.data.detailed_description
+      ? sanitizeHtml(parsedData.data.detailed_description, sanitizeOptions)
+      : null;
+
     const { error: updateError } = await supabase
       .from("companies")
       .update({
         id: parsedData.data.id,
         name: parsedData.data.name,
-        description: parsedData.data.description,
-        detailed_description: parsedData.data.detailed_description || null,
+        description: sanitizedDescription,
+        detailed_description: sanitizedDetailed,
         category_id: parsedData.data.category_id || null,
         locality_id: parsedData.data.locality_id || null,
         image_url: parsedData.data.image_url || null,

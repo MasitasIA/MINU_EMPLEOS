@@ -46,6 +46,25 @@ export async function applyToJob(jobId: string, coverLetter?: string) {
       return { success: true };
     }
 
+    // Anti-Spam: Max 10 postulaciones por día por candidato
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const { count, error: countError } = await supabase
+      .from("applications")
+      .select("*", { count: "exact", head: true })
+      .eq("candidate_id", user.id)
+      .gte("created_at", today.toISOString());
+
+    if (countError) {
+      return { success: false, error: "Error validando seguridad" };
+    }
+    if (count !== null && count >= 10) {
+      return {
+        success: false,
+        error: "Has alcanzado el límite de 10 postulaciones por día. Intenta de nuevo mañana.",
+      };
+    }
+
     const { error } = await supabase.from("applications").insert({
       job_id: jobId,
       candidate_id: user.id,

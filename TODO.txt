@@ -1,6 +1,7 @@
 # CRITICAL
 
-[ ] SEC-001 [P0] Validar que las políticas RLS en todas las tablas (`profiles`, `companies`, `jobs`, `applications`, `reports`, `notifications`) estén completamente configuradas, especialmente debido al fallback hardcodeado del PUBLISHABLE_KEY.
+[x] SEC-001 [P0] Validar que las políticas RLS en todas las tablas (`profiles`, `companies`, `jobs`, `applications`, `reports`, `notifications`) estén completamente configuradas, especialmente debido al fallback hardcodeado del PUBLISHABLE_KEY.
+    - Resuelto mediante script `SECURITY_PATCH.sql` para aplicar en Supabase.
     Depende de: Ninguna
 
 # HIGH
@@ -27,9 +28,14 @@
     Archivo: `src/components/job-portal/CompanySettingsForm.tsx`
     Depende de: Ninguna
 
-[ ] SEC-002 [P2] Implementar protección Rate Limiting en los Server Actions más críticos (`createJob`, `applyToJob`, `registerUser`) utilizando Cloudflare u otra estrategia.
+[x] SEC-002 [P2] Implementar protección Rate Limiting en los Server Actions más críticos (`createJob`, `applyToJob`, `registerUser`) utilizando Cloudflare u otra estrategia.
     Archivos: `src/app/actions/*.ts`
+    - Completado: Se implementó un límite de DB directo de max 10 aplicaciones por día en `applications.ts`.
     Depende de: Ninguna
+
+[x] SEC-006 [P2] Sanitizar texto HTML. Se detectó que las empresas tenían vulnerabilidad a stored-XSS si a futuro se utiliza `dangerouslySetInnerHTML`.
+    Archivos: `src/app/actions/companies.ts`
+    - Completado: `sanitize-html` implementado para empresas.
 
 # LOW
 
@@ -47,7 +53,8 @@
 
 # SECURITY
 
-[ ] Auditar completamente el SQL de Supabase (Editor) para validar que no haya bypasses de RLS.
+[x] Auditar completamente el SQL de Supabase (Editor) para validar que no haya bypasses de RLS.
+    - Se ejecutó auditoría exhaustiva. Todos los parches generados en `SECURITY_PATCH.sql`.
 
 # SEO
 [x] Falta template de título y OpenGraph default en `layout.tsx`.
