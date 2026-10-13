@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   const companyName = job.companies?.name || "Empresa Confidencial";
   const title = `${job.name} — ${companyName} | Minú Empleos`;
-  const description = `Postúlate para ${job.name} en ${companyName}. ${job.modality || ""} ${job.type || ""}. Ubicación: ${job.address || "No especificada"}.`;
+  const description = `Postúlate para ${job.name} en ${companyName}. ${job.modality || ""} ${job.job_type || ""}. Ubicación: ${job.address || "No especificada"}.`;
 
   return {
     title,
@@ -96,13 +96,13 @@ export default async function JobPage({
         addressCountry: "AR",
       }
     },
-    employmentType: job.type === "Full-time" ? "FULL_TIME" : job.type === "Part-time" ? "PART_TIME" : "OTHER",
-    baseSalary: job.salary ? {
+    employmentType: job.job_type === "Full-time" ? "FULL_TIME" : job.job_type === "Part-time" ? "PART_TIME" : "OTHER",
+    baseSalary: job.salary_min ? {
       "@type": "MonetaryAmount",
       currency: "ARS",
       value: {
         "@type": "QuantitativeValue",
-        value: job.salary,
+        value: job.salary_min,
         unitText: "MONTH"
       }
     } : undefined

@@ -18,6 +18,14 @@
     Archivo: `src/components/job-portal/JobSearchCatalog.tsx`
     Depende de: PERF-001
 
+[x] AUTH-001 [P1] Flujo de verificación de email y redirección a producción:
+    - Enlace de confirmación con `emailRedirectTo` a `${SITE_URL}/auth/callback` en lugar de localhost.
+    - Creación de Route Handler `/auth/callback` para canjear código PKCE/token_hash.
+    - Pantalla de "Revisa tu correo" con reenvío de correo en `/registro`.
+    - Mensaje de confirmación en `/iniciar?verified=true`.
+    Archivos: `src/app/actions/auth.ts`, `src/app/auth/callback/route.ts`, `src/app/registro/page.tsx`, `src/app/iniciar/page.tsx`
+    Depende de: Ninguna
+
 # MEDIUM
 
 [ ] SEO-002 [P2] Agregar metadatos globales (`openGraph`, `twitter`) y un template de título en el archivo `layout.tsx` principal.

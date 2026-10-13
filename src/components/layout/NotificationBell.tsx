@@ -30,7 +30,6 @@ export function NotificationBell() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line
     fetchNotifications();
     
     // Polling ligero cada 1 minuto

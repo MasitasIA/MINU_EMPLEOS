@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Store, UserPlus, ArrowRight, Eye, EyeOff, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Store, UserPlus, ArrowRight, Eye, EyeOff, Loader2, CheckCircle2, XCircle, Mail, RefreshCw } from "lucide-react";
 import { validatePhone, validatePassword, validateUsername } from "@/lib/validators";
-import { registerUser, checkUsernameAvailability } from "@/app/actions/auth";
+import { registerUser, checkUsernameAvailability, resendVerificationEmail } from "@/app/actions/auth";
 
 export default function RegistroPage() {
   const router = useRouter();
@@ -25,6 +25,9 @@ export default function RegistroPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid">("idle");
   const [usernameMsg, setUsernameMsg] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMsg, setResendMsg] = useState("");
 
   // Efecto para verificar disponibilidad del usuario en tiempo real
   useEffect(() => {
@@ -73,7 +76,7 @@ export default function RegistroPage() {
       return;
     }
 
-        // Validación Teléfono
+    // Validación Teléfono
     if (!validatePhone(formData.phone)) {
       setErrorMsg("El teléfono debe contener entre 7 y 15 caracteres válidos.");
       return;
@@ -95,8 +98,10 @@ export default function RegistroPage() {
     setIsLoading(true);
 
     try {
-      // Llamada al Server Action para guardar en archivo temporal
-      const response = await registerUser(formData);
+      const response = await registerUser({
+        ...formData,
+        redirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined,
+      });
 
       if (!response.success) {
         setErrorMsg(response.error || "Ocurrió un error al registrarse.");
@@ -104,13 +109,118 @@ export default function RegistroPage() {
         return;
       }
 
-      alert("¡Cuenta creada con éxito! Por favor inicia sesión.");
-      router.push("/");
+      setIsLoading(false);
+      setIsSubmitted(true);
     } catch (err) {
       setErrorMsg("Error de conexión con el servidor.");
       setIsLoading(false);
     }
   };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    setResendMsg("");
+    try {
+      const response = await resendVerificationEmail(
+        formData.mail,
+        typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined
+      );
+      if (response.success) {
+        setResendMsg("¡Correo reenviado con éxito! Revisa tu bandeja de entrada.");
+      } else {
+        setResendMsg(response.error || "No se pudo reenviar el correo.");
+      }
+    } catch {
+      setResendMsg("Error al conectar con el servidor.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  if (isSubmitted) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-surface-muted px-4 py-12 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-6 radius-predefined bg-white p-8 shadow-xl ring-1 ring-border text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Mail className="h-8 w-8" />
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-black tracking-tight text-foreground">
+              ¡Revisa tu correo electrónico!
+            </h2>
+            <p className="mt-2 text-sm text-foreground-muted">
+              Hemos enviado un enlace de confirmación a:
+            </p>
+            <p className="mt-2 font-bold text-foreground text-sm bg-surface-muted py-2 px-3 radius-predefined break-all">
+              {formData.mail}
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-blue-50/70 border border-blue-200/70 p-4 text-left text-xs text-blue-950 space-y-2">
+            <p className="font-bold flex items-center gap-1.5 text-blue-900">
+              <span>📌</span> Pasos para activar tu cuenta:
+            </p>
+            <ol className="list-decimal list-inside space-y-1 text-blue-900">
+              <li>Abre tu bandeja de entrada.</li>
+              <li>Busca el correo de <strong>Minú Empleos</strong>.</li>
+              <li>Haz clic en el enlace de confirmación para verificar tu cuenta.</li>
+            </ol>
+            <p className="text-blue-800/80 pt-1.5 border-t border-blue-200/60">
+              💡 <em>¿No lo ves? Revisa tu carpeta de <strong>Spam</strong> o <strong>Correo no deseado</strong>.</em>
+            </p>
+          </div>
+
+          {resendMsg && (
+            <div
+              className={`p-3 text-xs font-medium radius-predefined ${
+                resendMsg.includes("éxito")
+                  ? "bg-green-50 text-green-700 border border-green-200"
+                  : "bg-red-50 text-red-600 border border-red-200"
+              }`}
+            >
+              {resendMsg}
+            </div>
+          )}
+
+          <div className="space-y-3 pt-2">
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendLoading}
+              className="w-full radius-button border border-border bg-white px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-surface-muted transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {resendLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span>Reenviando...</span>
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 text-foreground-muted" />
+                  <span>¿No recibiste el correo? Reenviar</span>
+                </>
+              )}
+            </button>
+
+            <Link
+              href="/iniciar"
+              className="flex w-full items-center justify-center radius-button bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-primary/90 transition-all shadow-md shadow-primary/20"
+            >
+              Ir a Iniciar Sesión
+            </Link>
+
+            <Link
+              href="/"
+              className="block text-xs text-foreground-muted hover:text-foreground transition-colors pt-1"
+            >
+              Volver al inicio
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-surface-muted px-4 py-12 sm:px-6 lg:px-8">

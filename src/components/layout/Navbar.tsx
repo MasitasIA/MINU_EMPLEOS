@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -15,11 +15,60 @@ import Image from "next/image";
 import { AuthModal } from "@/components/ui/AuthModal";
 import { UserSession } from "@/lib/session";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { createClient } from "@/lib/supabase/client";
 
-export function Navbar({ user }: { user: UserSession | null }) {
+export function Navbar({ user: initialUser }: { user?: UserSession | null }) {
   const router = useRouter();
+  const [user, setUser] = useState<UserSession | null>(initialUser ?? null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (initialUser !== undefined) {
+      return;
+    }
+
+    const supabase = createClient();
+
+    const syncSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          setUser(null);
+          return;
+        }
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username, avatar_url")
+          .eq("id", session.user.id)
+          .maybeSingle();
+
+        setUser({
+          id: session.user.id,
+          email: session.user.email || "",
+          username: profile?.username || "Usuario",
+          avatar_url: profile?.avatar_url,
+        });
+      } catch (error) {
+        console.error("Error al sincronizar sesión en Navbar:", error);
+      }
+    };
+
+    syncSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        syncSession();
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [initialUser]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

@@ -4,7 +4,7 @@ import { Mail, Briefcase, Users, MapPin } from "lucide-react";
 import { UserSession } from "@/lib/session";
 
 // Componente de Footer
-export function Footer({ user }: { user: UserSession | null }) {
+export function Footer({ user = null }: { user?: UserSession | null } = {}) {
   return (
     <footer className="mt-auto border-t border-border bg-white pt-12 pb-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

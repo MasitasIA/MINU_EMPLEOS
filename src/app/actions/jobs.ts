@@ -98,10 +98,12 @@ export const getJobsForFacets = unstable_cache(
 
 export async function getJobById(slug: string) {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("jobs")
-      .select("*, companies(*), categories(name), localities(ciudad)")
+      .select(
+        "id, slug, name, description, requirements, job_type, modality, address, salary_min, salary_max, vacancies, is_active, company_id, category_id, locality_id, created_at, expires_at, companies(id, name, image_url, description, is_verified, website), categories(name), localities(ciudad)"
+      )
       .eq("slug", slug)
       .maybeSingle();
 
@@ -110,7 +112,14 @@ export async function getJobById(slug: string) {
       return null;
     }
 
-    return data;
+    if (!data) return null;
+
+    return {
+      ...data,
+      companies: Array.isArray(data.companies) ? data.companies[0] : data.companies,
+      categories: Array.isArray(data.categories) ? data.categories[0] : data.categories,
+      localities: Array.isArray(data.localities) ? data.localities[0] : data.localities,
+    };
   } catch (error) {
     console.error("Error inesperado en getJobById:", error);
     return null;
@@ -119,11 +128,14 @@ export async function getJobById(slug: string) {
 
 export async function getJobsByCompany(companyId: string) {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("jobs")
-      .select("*, categories(name), localities(ciudad)")
+      .select(
+        "id, slug, name, job_type, modality, salary_min, salary_max, is_active, created_at, expires_at, categories(name), localities(ciudad)"
+      )
       .eq("company_id", companyId)
+      .eq("is_active", true)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -131,7 +143,11 @@ export async function getJobsByCompany(companyId: string) {
       return [];
     }
 
-    return data || [];
+    return (data || []).map((job: any) => ({
+      ...job,
+      categories: Array.isArray(job.categories) ? job.categories[0] : job.categories,
+      localities: Array.isArray(job.localities) ? job.localities[0] : job.localities,
+    }));
   } catch (error) {
     console.error("Error inesperado en getJobsByCompany:", error);
     return [];
@@ -141,22 +157,33 @@ export async function getJobsByCompany(companyId: string) {
 export async function createJob(jobData: any) {
   try {
     const user = await getUser();
-    if (!user) return { success: false, error: "No autorizado" };
+    if (!user) {
+      console.error("[createJob] Error: Usuario no autenticado");
+      return { success: false, error: "No autorizado. Inicia sesión nuevamente." };
+    }
 
     const parsedData = JobCreateSchema.safeParse(jobData);
     if (!parsedData.success) {
-      return { success: false, error: "Datos de empleo inválidos" };
+      console.error("[createJob] Error de validación Zod:", parsedData.error.flatten());
+      const firstError = Object.values(parsedData.error.flatten().fieldErrors)[0]?.[0] || "Datos de empleo inválidos";
+      return { success: false, error: firstError };
     }
 
     const supabase = await createClient();
 
     // Validar propiedad de la empresa para evitar Mass Assignment/Spoofing
-    const { data: company } = await supabase
+    const { data: company, error: companyError } = await supabase
       .from("companies")
       .select("owner_id")
       .eq("id", parsedData.data.company_id)
       .single();
-    if (!company || company.owner_id !== user.id) {
+
+    if (companyError || !company || company.owner_id !== user.id) {
+      console.error("[createJob] Error de validación de empresa:", {
+        companyError,
+        company,
+        currentUserId: user.id,
+      });
       return {
         success: false,
         error: "No tienes permiso para publicar en esta empresa",
@@ -172,8 +199,10 @@ export async function createJob(jobData: any) {
       .eq("company_id", parsedData.data.company_id)
       .gte("created_at", today.toISOString());
 
-    if (countError)
-      return { success: false, error: "Error validando seguridad" };
+    if (countError) {
+      console.error("[createJob] Error en conteo anti-spam:", countError);
+      return { success: false, error: "Error validando seguridad de publicaciones" };
+    }
     if (count !== null && count >= 5) {
       return {
         success: false,
@@ -230,16 +259,16 @@ export async function createJob(jobData: any) {
     });
 
     if (error) {
-      console.error("Error creando empleo:", error);
-      return { success: false, error: "Error al crear el empleo" };
+      console.error("[createJob] Error creando empleo en Supabase:", error);
+      return { success: false, error: error.message || "Error al crear el empleo" };
     }
 
     revalidatePath("/panel-empresa");
     revalidatePath("/empleos");
     return { success: true };
-  } catch (error) {
-    console.error("Error inesperado en createJob:", error);
-    return { success: false, error: "Error interno del servidor" };
+  } catch (error: any) {
+    console.error("[createJob] Error inesperado en createJob:", error);
+    return { success: false, error: error?.message || "Error interno del servidor" };
   }
 }
 

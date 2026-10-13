@@ -7,8 +7,8 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AnnouncementBanner } from "@/components/layout/AnnouncementBanner";
-import { getUser } from "@/lib/session";
 import { getSiteSettings } from "@/app/actions/settings";
+import { SITE_URL } from "@/lib/supabase/config";
 
 // Tipografías
 const geistSans = Geist({
@@ -23,7 +23,7 @@ const geistMono = Geist_Mono({
 
 // Metadatos para SEO
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://minuempleos.com.ar'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Minú Empleos | Tu portal de trabajo en Guaminí",
     template: "%s | Minú Empleos",
@@ -51,7 +51,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getUser();
   const settings = await getSiteSettings();
 
   return (
@@ -67,9 +66,9 @@ export default async function RootLayout({
             updatedAt={settings.updated_at}
           />
         )}
-        <Navbar user={user} />
+        <Navbar />
         <main className="flex-1">{children}</main>
-        <Footer user={user} />
+        <Footer />
       </body>
     </html>
   );

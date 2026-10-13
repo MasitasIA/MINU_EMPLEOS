@@ -131,47 +131,53 @@ export async function createCompany(companyData: any) {
 /**
  * Obtiene las empresas para tarjetas (inicio y directorio) con selección estricta de campos.
  */
-export async function getAllCompanies(limit?: number) {
-  try {
-    const supabase = createPublicClient();
-    let query = supabase
-      .from("companies")
-      .select(
-        "id, name, description, image_url, cover_url, is_verified, category_id, categories(name)",
-      )
-      .eq("is_active", true)
-      .order("created_at", { ascending: false });
+export const getAllCompanies = unstable_cache(
+  async (limit?: number) => {
+    try {
+      const supabase = createPublicClient();
+      let query = supabase
+        .from("companies")
+        .select(
+          "id, name, description, image_url, cover_url, is_verified, category_id, categories(name)",
+        )
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
 
-    if (limit) {
-      query = query.limit(limit);
-    }
+      if (limit) {
+        query = query.limit(limit);
+      }
 
-    const { data, error } = await query;
+      const { data, error } = await query;
 
-    if (error) {
-      console.error("Error obteniendo empresas:", error);
+      if (error) {
+        console.error("Error obteniendo empresas:", error);
+        return [];
+      }
+
+      return (data || []).map((comp: any) => ({
+        ...comp,
+        categories: Array.isArray(comp.categories) ? comp.categories[0] : comp.categories,
+      }));
+    } catch (error) {
+      console.error("Error inesperado en getAllCompanies:", error);
       return [];
     }
-
-    return (data || []).map((comp: any) => ({
-      ...comp,
-      categories: Array.isArray(comp.categories) ? comp.categories[0] : comp.categories,
-    }));
-  } catch (error) {
-    console.error("Error inesperado en getAllCompanies:", error);
-    return [];
-  }
-}
+  },
+  ["all-companies-v1"],
+  { revalidate: 1800, tags: ["companies"] }
+);
 
 /**
  * Obtiene una empresa especifica por su ID (slug).
  */
 export async function getCompanyById(slug: string) {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("companies")
-      .select("*, localities(ciudad), categories(name)")
+      .select(
+        "id, name, description, detailed_description, image_url, cover_url, is_verified, is_active, owner_id, address, website, linkedin_url, size, phone, category_id, locality_id, created_at, localities(ciudad), categories(name)"
+      )
       .eq("id", slug)
       .maybeSingle();
 
@@ -180,7 +186,13 @@ export async function getCompanyById(slug: string) {
       return null;
     }
 
-    return data;
+    if (!data) return null;
+
+    return {
+      ...data,
+      categories: Array.isArray(data.categories) ? data.categories[0] : data.categories,
+      localities: Array.isArray(data.localities) ? data.localities[0] : data.localities,
+    };
   } catch (error) {
     console.error("Error inesperado en getCompanyById:", error);
     return null;

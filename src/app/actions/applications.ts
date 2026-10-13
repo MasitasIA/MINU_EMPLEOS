@@ -139,7 +139,7 @@ export async function getMyApplications() {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("applications")
-      .select("*, jobs(name, slug, companies(name, image_url))")
+      .select("id, status, created_at, cover_letter, job_id, candidate_id, jobs(id, name, slug, companies(name, image_url))")
       .eq("candidate_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -180,7 +180,7 @@ export async function getApplicationsForJob(jobId: string) {
 
     const { data, error } = await supabase
       .from("applications")
-      .select("*, profiles(full_name, title, resume_url, phone, bio, username, avatar_url)")
+      .select("id, status, created_at, cover_letter, job_id, candidate_id, profiles(full_name, title, resume_url, phone, bio, username, avatar_url)")
       .eq("job_id", jobId)
       .order("created_at", { ascending: false });
 
@@ -189,7 +189,10 @@ export async function getApplicationsForJob(jobId: string) {
       return [];
     }
 
-    return data || [];
+    return (data || []).map((app: any) => ({
+      ...app,
+      profiles: Array.isArray(app.profiles) ? app.profiles[0] : app.profiles,
+    }));
   } catch (error) {
     console.error("Error inesperado:", error);
     return [];
@@ -226,7 +229,7 @@ export async function getApplicationsForCompany(companyId: string) {
 
     const { data, error } = await supabase
       .from("applications")
-      .select("*, profiles(full_name, title, resume_url, phone, bio, username, avatar_url), jobs(name, slug)")
+      .select("id, status, created_at, cover_letter, job_id, candidate_id, profiles(full_name, title, resume_url, phone, bio, username, avatar_url), jobs(id, name, slug)")
       .in("job_id", jobIds)
       .order("created_at", { ascending: false });
 
@@ -235,7 +238,11 @@ export async function getApplicationsForCompany(companyId: string) {
       return [];
     }
 
-    return data || [];
+    return (data || []).map((app: any) => ({
+      ...app,
+      profiles: Array.isArray(app.profiles) ? app.profiles[0] : app.profiles,
+      jobs: Array.isArray(app.jobs) ? app.jobs[0] : app.jobs,
+    }));
   } catch (error) {
     console.error("Error inesperado:", error);
     return [];

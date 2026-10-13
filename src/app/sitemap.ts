@@ -1,11 +1,11 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '@/lib/supabase/config';
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, SITE_URL } from '@/lib/supabase/config';
 
 export const revalidate = 3600; // Revalidar el sitemap cada hora (ISR)
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://minuempleos.com.ar';
+  const baseUrl = SITE_URL;
 
   // 1. Rutas estáticas principales
   const staticRoutes: MetadataRoute.Sitemap = [

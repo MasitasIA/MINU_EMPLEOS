@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogIn, ArrowRight, Eye, EyeOff, Loader2, Store } from "lucide-react";
+import { LogIn, ArrowRight, Eye, EyeOff, Loader2, Store, CheckCircle2 } from "lucide-react";
 import { loginUser } from "@/app/actions/auth";
 
 export default function IniciarSesionPage() {
@@ -16,6 +16,16 @@ export default function IniciarSesionPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("verified") === "true") {
+        setIsVerified(true);
+      }
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -67,6 +77,13 @@ export default function IniciarSesionPage() {
 
         {/* Formulario */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {isVerified && (
+            <div className="radius-predefined bg-green-50 p-3.5 text-sm font-medium text-green-700 ring-1 ring-green-200 flex items-center gap-2.5">
+              <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+              <span>¡Cuenta activada con éxito! Ya puedes iniciar sesión.</span>
+            </div>
+          )}
+
           {errorMsg && (
             <div className="radius-predefined bg-red-50 p-3 text-sm font-medium text-red-600 ring-1 ring-red-200">
               {errorMsg}

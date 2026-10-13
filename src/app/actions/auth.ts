@@ -1,9 +1,11 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createPublicClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import { getUser } from "@/lib/session";
 import { ProfileSchema } from "@/lib/validations";
+import { SITE_URL } from "@/lib/supabase/config";
 
 /**
  * Registra un nuevo usuario en Supabase Auth y luego
@@ -19,6 +21,7 @@ export async function registerUser(userData: any) {
       email: userData.mail,
       password: userData.contrasena,
       options: {
+        emailRedirectTo: userData.redirectTo || `${SITE_URL}/auth/callback`,
         data: {
           username: userData.usuario,
           full_name: `${userData.nombre} ${userData.apellido}`,
@@ -37,6 +40,32 @@ export async function registerUser(userData: any) {
   } catch (error) {
     console.error("Error de servidor:", error);
     return { success: false, error: "Error de servidor. Intenta de nuevo." };
+  }
+}
+
+/**
+ * Reenvía el correo de confirmación de registro a un usuario.
+ */
+export async function resendVerificationEmail(email: string, redirectTo?: string) {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: {
+        emailRedirectTo: redirectTo || `${SITE_URL}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      console.error("Error reenviando correo:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error inesperado al reenviar correo:", error);
+    return { success: false, error: "Error de servidor al reenviar el correo." };
   }
 }
 
@@ -73,7 +102,7 @@ export async function loginUser(emailOrUsername: string, contrasena: string) {
   try {
     const supabase = await createClient();
     
-    let email = emailOrUsername;
+    const email = emailOrUsername;
 
     // Si no tiene '@', asumimos que es un username.
     // Supabase Auth requiere Email o Phone. Entonces buscamos el Email de ese username.
@@ -202,10 +231,10 @@ export async function getProfile(userId: string) {
  */
 export async function getProfileByUsername(username: string) {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("profiles")
-      .select("*, localities(ciudad)")
+      .select("id, username, full_name, title, bio, avatar_url, phone, resume_url, is_public, birth_date, education_level, years_experience, mobility, availability, skills, linkedin_url, localities(ciudad)")
       .eq("username", username)
       .single();
 
@@ -213,7 +242,13 @@ export async function getProfileByUsername(username: string) {
       console.error("Error obteniendo perfil por username:", error);
       return null;
     }
-    return data;
+
+    if (!data) return null;
+
+    return {
+      ...data,
+      localities: Array.isArray(data.localities) ? data.localities[0] : data.localities,
+    };
   } catch (error) {
     console.error("Error inesperado en getProfileByUsername:", error);
     return null;
@@ -221,27 +256,34 @@ export async function getProfileByUsername(username: string) {
 }
 
 /**
- * Obtiene todos los perfiles públicos.
+ * Obtiene todos los perfiles públicos con caché a nivel de Edge (30 min).
  */
-export async function getAllPublicProfiles() {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*, localities(ciudad)")
-      .eq("is_public", true)
-      .order("created_at", { ascending: false });
+export const getAllPublicProfiles = unstable_cache(
+  async () => {
+    try {
+      const supabase = createPublicClient();
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, full_name, title, bio, avatar_url, phone, is_public, localities(ciudad)")
+        .eq("is_public", true)
+        .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Error obteniendo perfiles públicos:", error);
+      if (error) {
+        console.error("Error obteniendo perfiles públicos:", error);
+        return [];
+      }
+      return (data || []).map((p: any) => ({
+        ...p,
+        localities: Array.isArray(p.localities) ? p.localities[0] : p.localities,
+      }));
+    } catch (error) {
+      console.error("Error inesperado en getAllPublicProfiles:", error);
       return [];
     }
-    return data || [];
-  } catch (error) {
-    console.error("Error inesperado en getAllPublicProfiles:", error);
-    return [];
-  }
-}
+  },
+  ["all-public-profiles-v1"],
+  { revalidate: 1800, tags: ["profiles"] }
+);
 
 /**
  * Sube el archivo PDF del currículum al bucket de Supabase.

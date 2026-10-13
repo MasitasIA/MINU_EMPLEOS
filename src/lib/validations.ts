@@ -43,17 +43,32 @@ export const CompanyUpdateSchema = CompanyCreateSchema.extend({
 export const JobCreateSchema = z.object({
   company_id: z.string().min(1, "ID de empresa requerido"),
   category_id: z.string().uuid("Categoría inválida"),
-  name: z.string().min(5, "El título debe tener al menos 5 caracteres").max(150),
-  description: z.string().min(20, "La descripción es muy corta").max(5000),
-  salary_min: z.preprocess((val) => Number(val), z.number().nonnegative("Debe ser mayor a 0").min(1, "El salario mínimo es obligatorio")),
-  salary_max: z.preprocess((val) => val === '' ? null : Number(val), z.number().nonnegative().optional().nullable()),
-  vacancies: z.preprocess((val) => val === '' ? 1 : Number(val), z.number().int().positive().default(1)),
-  job_type: z.string(), // z.enum(...) removed to avoid breaking existing DB strings if they don't exactly match
+  name: z.string().min(3, "El título debe tener al menos 3 caracteres").max(150),
+  description: z.string().min(10, "La descripción debe tener al menos 10 caracteres").max(5000),
+  salary_min: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined) ? null : Number(val),
+    z.number().nonnegative("El salario debe ser mayor o igual a 0").optional().nullable()
+  ),
+  salary_max: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined) ? null : Number(val),
+    z.number().nonnegative("El salario debe ser mayor o igual a 0").optional().nullable()
+  ),
+  vacancies: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined) ? 1 : Number(val),
+    z.number().int().positive().default(1)
+  ),
+  job_type: z.string(),
   modality: z.string(),
   requirements: z.string().max(3000).optional().nullable(),
   locality_id: z.string().uuid("Localidad inválida"),
-  address: z.string().max(200).optional().nullable(),
-  expires_at: z.string().optional().nullable(),
+  address: z.preprocess(
+    (val) => (val === "" ? null : val),
+    z.string().max(200).optional().nullable()
+  ),
+  expires_at: z.preprocess(
+    (val) => (val === "" ? null : val),
+    z.string().optional().nullable()
+  ),
 });
 
 export const JobUpdateSchema = JobCreateSchema.omit({ company_id: true });

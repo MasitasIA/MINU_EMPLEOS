@@ -131,7 +131,6 @@ export function ImageUploadCropper({
                   : "w-full aspect-[21/9] radius-predefined"
               }`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={currentImageUrl}
                 alt="Preview"
