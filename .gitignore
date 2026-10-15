@@ -43,3 +43,4 @@ next-env.d.ts
 # cloudflare / open-next
 .open-next
 .wrangler
+worker-configuration.d.ts

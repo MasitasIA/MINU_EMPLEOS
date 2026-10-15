@@ -32,31 +32,34 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const { data } = await supabase.auth.getUser()
+    const user = data?.user
 
-  const isProtectedRoute = 
-    request.nextUrl.pathname.startsWith('/mi-cuenta') || 
-    request.nextUrl.pathname.startsWith('/panel-empresa') ||
-    request.nextUrl.pathname.startsWith('/mis-postulaciones') ||
-    request.nextUrl.pathname.startsWith('/onboarding')
+    const isProtectedRoute = 
+      request.nextUrl.pathname.startsWith('/mi-cuenta') || 
+      request.nextUrl.pathname.startsWith('/panel-empresa') ||
+      request.nextUrl.pathname.startsWith('/mis-postulaciones') ||
+      request.nextUrl.pathname.startsWith('/onboarding')
 
-  if (!user && isProtectedRoute) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/iniciar'
-    // Opcionalmente podemos guardar la URL original para redirigir después de iniciar sesión
-    // url.searchParams.set('redirectTo', request.nextUrl.pathname)
-    return NextResponse.redirect(url)
-  }
+    if (!user && isProtectedRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/iniciar'
+      return NextResponse.redirect(url)
+    }
 
-  // Si el usuario está logueado y trata de acceder a login/registro
-  const isAuthRoute = 
-    request.nextUrl.pathname === '/iniciar' || 
-    request.nextUrl.pathname === '/registro'
+    // Si el usuario está logueado y trata de acceder a login/registro
+    const isAuthRoute = 
+      request.nextUrl.pathname === '/iniciar' || 
+      request.nextUrl.pathname === '/registro'
 
-  if (user && isAuthRoute) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/mi-cuenta'
-    return NextResponse.redirect(url)
+    if (user && isAuthRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/mi-cuenta'
+      return NextResponse.redirect(url)
+    }
+  } catch (err) {
+    console.error("Error validando sesión en middleware:", err)
   }
 
   return supabaseResponse

@@ -2,7 +2,8 @@
 
 import { createClient, createPublicClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/session";
-import { revalidatePath, unstable_cache } from "next/cache";
+import { revalidatePath } from "next/cache";
+import { createCachedFunction } from "@/lib/cache";
 import { CompanyCreateSchema, CompanyUpdateSchema } from "@/lib/validations";
 import sanitizeHtml from "sanitize-html";
 
@@ -131,7 +132,7 @@ export async function createCompany(companyData: any) {
 /**
  * Obtiene las empresas para tarjetas (inicio y directorio) con selección estricta de campos.
  */
-export const getAllCompanies = unstable_cache(
+export const getAllCompanies = createCachedFunction(
   async (limit?: number) => {
     try {
       const supabase = createPublicClient();

@@ -1,12 +1,11 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
-import { unstable_cache } from "next/cache";
+import { createCachedFunction } from "@/lib/cache";
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "@/lib/supabase/config";
 
 // Creamos un cliente anonimo y simple sin cookies ya que esto es información pública
-// y queremos aprovechar el fetch cache de Next.js
-export const getSiteSettings = unstable_cache(
+export const getSiteSettings = createCachedFunction(
   async () => {
     try {
       const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);

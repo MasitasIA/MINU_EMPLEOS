@@ -2,7 +2,8 @@
 
 import { createClient, createPublicClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/session";
-import { revalidatePath, unstable_cache } from "next/cache";
+import { revalidatePath } from "next/cache";
+import { createCachedFunction } from "@/lib/cache";
 import { JobCreateSchema, JobUpdateSchema } from "@/lib/validations";
 import sanitizeHtml from "sanitize-html";
 
@@ -76,7 +77,7 @@ export async function getAllJobs(filters?: JobFilters) {
  * Contadores y datos para facetas de búsqueda en el catálogo.
  * Cacheado a nivel de Edge por 30 minutos (1800s) para evitar sobrecargar el Worker.
  */
-export const getJobsForFacets = unstable_cache(
+export const getJobsForFacets = createCachedFunction(
   async () => {
     try {
       const supabase = createPublicClient();

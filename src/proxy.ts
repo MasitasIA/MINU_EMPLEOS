@@ -24,8 +24,8 @@ export async function proxy(request: NextRequest) {
         });
         
         if (res.ok) {
-          const data = await res.json();
-          if (data && data.length > 0 && data[0].maintenance_mode) {
+          const data = (await res.json()) as any[];
+          if (Array.isArray(data) && data.length > 0 && data[0]?.maintenance_mode) {
             return NextResponse.redirect(new URL('/mantenimiento', request.url));
           }
         }

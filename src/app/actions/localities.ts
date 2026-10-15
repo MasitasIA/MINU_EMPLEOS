@@ -1,13 +1,13 @@
 "use server";
 
 import { createPublicClient } from "@/lib/supabase/server";
-import { unstable_cache } from "next/cache";
+import { createCachedFunction } from "@/lib/cache";
 
 /**
  * Consulta cacheada de localidades (1 hora de revalidación).
  * Utiliza cliente público para no interactuar con cookies ni sesión de usuario.
  */
-export const getAllLocalities = unstable_cache(
+export const getAllLocalities = createCachedFunction(
   async () => {
     try {
       const supabase = createPublicClient();

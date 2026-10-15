@@ -1,13 +1,13 @@
 "use server";
 
 import { createPublicClient } from "@/lib/supabase/server";
-import { unstable_cache } from "next/cache";
+import { createCachedFunction } from "@/lib/cache";
 
 /**
  * Consulta cacheada de categorías (1 hora de revalidación).
  * Utiliza cliente público para no interactuar con cookies ni sesión de usuario.
  */
-export const getAllCategories = unstable_cache(
+export const getAllCategories = createCachedFunction(
   async () => {
     try {
       const supabase = createPublicClient();
@@ -34,7 +34,7 @@ export const getAllCategories = unstable_cache(
 /**
  * Consulta cacheada de categorías populares (1 hora de revalidación).
  */
-export const getPopularCategories = unstable_cache(
+export const getPopularCategories = createCachedFunction(
   async (limit: number = 5) => {
     try {
       const supabase = createPublicClient();

@@ -2,7 +2,7 @@
 
 import { createClient, createPublicClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { unstable_cache } from "next/cache";
+import { createCachedFunction } from "@/lib/cache";
 import { getUser } from "@/lib/session";
 import { ProfileSchema } from "@/lib/validations";
 import { SITE_URL } from "@/lib/supabase/config";
@@ -258,7 +258,7 @@ export async function getProfileByUsername(username: string) {
 /**
  * Obtiene todos los perfiles públicos con caché a nivel de Edge (30 min).
  */
-export const getAllPublicProfiles = unstable_cache(
+export const getAllPublicProfiles = createCachedFunction(
   async () => {
     try {
       const supabase = createPublicClient();

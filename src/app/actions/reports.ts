@@ -10,15 +10,17 @@ export async function submitReport(
   entityType: ReportEntityType,
   entityId: string,
   reason: string,
-  description?: string
+  description?: string,
 ) {
   try {
     const supabase = await createClient();
     const user = await getUser();
 
-    // Podemos permitir reportes anónimos, o requerir sesión. Requerir sesión evita spam masivo.
     if (!user) {
-      return { success: false, error: "Debes iniciar sesión para enviar un reporte" };
+      return {
+        success: false,
+        error: "Debes iniciar sesión para enviar un reporte",
+      };
     }
 
     const { error } = await supabase.from("reports").insert({
@@ -27,12 +29,15 @@ export async function submitReport(
       entity_id: entityId,
       reason,
       description: description || null,
-      status: "pending"
+      status: "pending",
     });
 
     if (error) {
       console.error("Error al enviar el reporte:", error);
-      return { success: false, error: "Hubo un error al enviar el reporte. Inténtalo de nuevo." };
+      return {
+        success: false,
+        error: "Hubo un error al enviar el reporte. Inténtalo de nuevo.",
+      };
     }
 
     return { success: true };
