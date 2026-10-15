@@ -15,7 +15,7 @@
     "@supabase/supabase-js": "^2.115.0",
     "clsx": "^2.1.1",
     "lucide-react": "^1.38.0",
-    "next": "16.3.3",
+    "next": "^16.4.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-easy-crop": "^6.2.3",
@@ -31,7 +31,7 @@
     "@types/react-dom": "^19",
     "@types/sanitize-html": "^2.16.1",
     "eslint": "^9",
-    "eslint-config-next": "16.3.3",
+    "eslint-config-next": "^16.4.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "wrangler": "^4.150.0"
