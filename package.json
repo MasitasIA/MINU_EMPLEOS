@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "opennextjs-cloudflare build",
     "build:worker": "opennextjs-cloudflare build",
+    "build:next": "next build",
     "preview": "opennextjs-cloudflare preview",
     "start": "next start",
     "lint": "eslint"
