@@ -156,7 +156,7 @@ export function Navbar({ user: initialUser }: { user?: UserSession | null }) {
 
             {user ? (
               <>
-                <NotificationBell />
+                <NotificationBell userId={user.id} />
                 <Link
                   href="/mi-cuenta"
                   className="flex items-center gap-2 radius-button p-1 sm:p-2 text-primary font-bold transition-colors hover:bg-primary/10"
